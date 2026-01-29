@@ -112,6 +112,8 @@ const insertRecipeWithIngredients = async (
 ) => {
   const insertedRecipe = await api.recipes.upsert(recipe);
 
+  console.log(insertedRecipe.id);
+
   if (!ingredients) {
     logger.info(
       "inserted recipe with no ingredients: %s",
@@ -130,8 +132,10 @@ const insertRecipeWithIngredients = async (
       unit: ingredient.unit,
     };
 
-    api.recipeIngredients.insert(recipeIngredient);
+    await api.recipeIngredients.insert(recipeIngredient);
   });
+
+  logger.info("recipe inserted: %s", JSON.stringify(insertedRecipe));
 };
 
 const insertRecipeIngredient = async (recipeIngredient: RecipeIngredient) => {
