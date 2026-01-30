@@ -13,3 +13,8 @@ const recipeIngredientSchema = createSelectSchema(recipeIngredients);
 export type Recipe = z.infer<typeof recipeSchema>;
 export type Ingredient = z.infer<typeof ingredientSchema>;
 export type RecipeIngredient = z.infer<typeof recipeIngredientSchema>;
+export type RecipeFilters = {
+  maxTime?: number;
+  maxCalories?: number;
+  tags?: string[];
+};
