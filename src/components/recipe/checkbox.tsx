@@ -13,7 +13,7 @@ export function RecipeCheckbox({ recipe }: { recipe: Recipe }) {
 
   return (
     <Checkbox
-      checked={mounted && items.some((r) => r.id === recipe.id)}
+      checked={mounted && items.some((r: Recipe) => r.id === recipe.id)}
       onCheckedChange={(next) => {
         next ? add(recipe) : remove(recipe.id);
       }}

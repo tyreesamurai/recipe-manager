@@ -12,6 +12,7 @@ import {
   FieldLegend,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { buildRecipeFilterQuery } from "@/lib/filters";
 import { helpers } from "@/lib/helpers";
 import type { RecipeFilters } from "@/lib/types";
 
@@ -37,23 +38,8 @@ export function FilterForm() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    const searchParams = [];
-
-    if (data.name && data.name !== "") {
-      searchParams.push(`name=${data.name}`);
-    }
-
-    if (data.maxTime && data.maxTime !== 0) {
-      searchParams.push(`maxTime=${data.maxTime}`);
-    }
-
-    if (data.maxCalories && data.maxCalories !== 0) {
-      searchParams.push(`maxCalories=${data.maxCalories}`);
-    }
-
-    if (searchParams) {
-      router.push(`/?${searchParams.join("&")}`);
-    }
+    const qs = buildRecipeFilterQuery(data);
+    router.push(qs ? `/?{qs}` : "/");
   }
 
   return (

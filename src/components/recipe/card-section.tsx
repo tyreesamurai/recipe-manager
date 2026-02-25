@@ -1,26 +1,24 @@
 import { RecipeCard } from "@/components/recipe/card";
 import { api } from "@/lib/api";
-import { helpers } from "@/lib/helpers";
+import { filtersFromSearchParams } from "@/lib/filters";
 import { logger } from "@/lib/logger";
-import type { RecipeFilters } from "@/lib/types";
+import type { RecipeFilters, SearchParams } from "@/lib/types";
 
 export async function RecipeCardSection({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams?: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+  const filters: RecipeFilters = filtersFromSearchParams(params ?? {});
 
-  const filters: RecipeFilters = {
-    maxTime: helpers.parseOptionalInt(params.maxTime),
-    maxCalories: helpers.parseOptionalInt(params.maxCalories),
-    name: helpers.parseOptionalString(params.name),
-    tags: helpers.parseStringArray(params.tags),
-  };
-
-  logger.info("filter [searchParams] look like: %s", JSON.stringify(filters));
+  logger.info("filters: %s", JSON.stringify(filters));
 
   const recipes = await api.recipes.query(filters);
+
+  if (recipes.length === 0) {
+    return <p>No recipes found.</p>;
+  }
 
   return recipes.map((recipe) => (
     <div key={recipe.id}>

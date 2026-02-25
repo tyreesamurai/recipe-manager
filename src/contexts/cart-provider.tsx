@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-// import { errors } from "@/lib/errors";
+import { AppError } from "@/lib/errors";
+import { logger } from "@/lib/logger";
 import type { Recipe } from "@/lib/types";
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -15,8 +16,15 @@ type CartContextValue = {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (context === undefined) {
-    // throw errors.CONTEXT_NOT_FOUND;
+  if (!context) {
+    const error = new AppError({
+      code: "MISCONFIGURATION",
+      status: 500,
+      message: "CartProvider is missing for this part of the application",
+      meta: { hook: "useCart" },
+    });
+    logger.error(error);
+    throw error;
   }
 
   return context;

@@ -1,31 +1,34 @@
-import { logger } from "@/lib/logger";
+export type AppErrorCode =
+  | "MISCONFIGURATION"
+  | "VALIDATION"
+  | "NOT_FOUND"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "CONFLICT"
+  | "INTERNAL";
 
-const envVarNotFound = (envVar: string) => {
-  logger.fatal(`environment variables ${envVar} not found`);
-};
+export class AppError extends Error {
+  public readonly code: AppErrorCode;
+  public readonly status: number;
+  public readonly cause?: unknown;
+  public readonly meta?: Record<string, unknown>;
 
-const contextNotFound = () => {
-  logger.fatal("useCartContext used outside of CartContextProvider");
-};
+  constructor(opts: {
+    code: AppErrorCode;
+    message: string;
+    status: number;
+    cause?: unknown;
+    meta?: Record<string, unknown>;
+  }) {
+    super(opts.message);
+    this.name = "AppError";
+    this.code = opts.code;
+    this.status = opts.status;
+    this.cause = opts.cause;
+    this.meta = opts.meta;
+  }
+}
 
-const localStorageMalformed = () => {
-  logger.error("local storage does not contain the expected value");
-};
-
-// const ENV_VAR_NOT_FOUND = new Error("unable to locate environment variable");
-//
-// const CONTEXT_NOT_FOUND = new Error(
-//   "useCartContext must be used within CartContextProvider",
-// );
-// const LOCAL_STORAGE_MALFORMED = new Error(
-//   "local storage is not set to correct type (Recipe[])",
-// );
-
-export const errors = {
-  envVarNotFound,
-  contextNotFound,
-  localStorageMalformed,
-  // ENV_VAR_NOT_FOUND,
-  // CONTEXT_NOT_FOUND,
-  // LOCAL_STORAGE_MALFORMED,
-};
+export function isAppError(err: unknown): err is AppError {
+  return err instanceof AppError;
+}

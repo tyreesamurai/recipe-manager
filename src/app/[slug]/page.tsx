@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 
 export default async function RecipePage({
@@ -11,12 +12,27 @@ export default async function RecipePage({
   const recipe = await api.recipes.get(slug.replaceAll("-", " "));
 
   if (!recipe) {
-    return;
+    const error = new AppError({
+      code: "NOT_FOUND",
+      status: 404,
+      message: "Recipe not found",
+    });
+
+    logger.error(error);
+
+    throw error;
   }
 
   if (!recipe.id) {
-    logger.error("no recipe id for %s", recipe.name);
-    return;
+    const error = new AppError({
+      code: "MISCONFIGURATION",
+      status: 500,
+      message: `no recipe ID for ${recipe.name}`,
+    });
+
+    logger.error(error);
+
+    throw error;
   }
 
   const ingredients = await api.recipes.getIngredients(recipe.id);
