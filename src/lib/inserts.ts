@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/index";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
-import { logger } from "@/lib/logger";
 import type {
   Ingredient,
   RecipeIngredient,

@@ -170,7 +170,7 @@ export const fetchIngredientByID = async (
       .where(eq(schema.ingredients.id, id))
       .limit(1);
 
-    const parsed = recipeSchema.safeParse(row);
+    const parsed = ingredientSchema.safeParse(row);
 
     if (!parsed.success) {
       return {
@@ -211,7 +211,7 @@ export const fetchIngredientByName = async (
       .where(eq(schema.ingredients.name, cleanedName))
       .limit(1);
 
-    const parsed = recipeSchema.safeParse(row);
+    const parsed = ingredientSchema.safeParse(row);
 
     if (!parsed.success) {
       return {
@@ -317,7 +317,7 @@ export const getIngredientsForRecipes = async (
         error: new AppError({
           code: "INTERNAL",
           status: 500,
-          message: "",
+          message: "Failed to parse ingredients from database",
           meta: { issues: parsed.error.issues },
           cause: parsed.error,
         }),

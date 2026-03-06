@@ -9,9 +9,9 @@ export default async function RecipePage({
 }) {
   const { slug } = await params;
 
-  const recipe = await api.recipes.get(slug.replaceAll("-", " "));
+  const recipeResult = await api.recipes.get(slug.replaceAll("-", " "));
 
-  if (!recipe) {
+  if (!recipeResult.ok) {
     const error = new AppError({
       code: "NOT_FOUND",
       status: 404,
@@ -22,6 +22,8 @@ export default async function RecipePage({
 
     throw error;
   }
+
+  const recipe = recipeResult.data;
 
   if (!recipe.id) {
     const error = new AppError({
@@ -35,7 +37,8 @@ export default async function RecipePage({
     throw error;
   }
 
-  const ingredients = await api.recipes.getIngredients(recipe.id);
+  const ingredientsResult = await api.recipes.getIngredients(recipe.id);
+  const ingredients = ingredientsResult.ok ? ingredientsResult.data : [];
 
   return (
     <div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
 import { useCart } from "@/contexts/cart-provider";
+import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
-import { type Ingredient, ingredientSchema } from "@/lib/types";
+import { type Ingredient, ingredientsSchema } from "@/lib/types";
 
 export function ShoppingListSection() {
   const { items } = useCart();
@@ -16,7 +16,7 @@ export function ShoppingListSection() {
   );
 
   useEffect(() => {
-    if (!ids || ids.length === 0) {
+    if (ids.length === 0) {
       setIngredients([]);
       return;
     }
@@ -29,14 +29,30 @@ export function ShoppingListSection() {
       });
 
       if (!response.ok) {
-        logger.error("bad response from endpoint /api/recipe/ingredients");
+        logger.error(
+          new AppError({
+            code: "MISCONFIGURATION",
+            status: 500,
+            message: "bad response from endpoint",
+            meta: { endpoint: "/api/recipe/ingredients" },
+          }),
+        );
       }
 
       const json = await response.json();
 
-      const ingredients = z.array(ingredientSchema).parse(json.ingredients);
+      const parsed = ingredientsSchema.safeParse(json.ingredients);
 
-      return ingredients;
+      if (!parsed.success) {
+        throw new AppError({
+          code: "MISCONFIGURATION",
+          status: 500,
+          message: "unable to read ingredients from endpoint",
+          meta: { endpoint: "/api/recipe/ingredients" },
+        });
+      }
+
+      return parsed.data;
     };
 
     getIngredients().then((response) => {

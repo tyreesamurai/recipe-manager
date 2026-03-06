@@ -6,10 +6,14 @@ export async function GET(
 ) {
   const { slug } = await ctx.params;
 
-  return Response.json(
-    {
-      data: await api.recipes.get(slug),
-    },
-    { status: 200 },
-  );
+  const recipe = await api.recipes.get(slug);
+
+  if (!recipe.ok) {
+    return Response.json(
+      { error: recipe.error },
+      { status: recipe.error.status },
+    );
+  }
+
+  return Response.json({ recipe: recipe.data }, { status: 200 });
 }

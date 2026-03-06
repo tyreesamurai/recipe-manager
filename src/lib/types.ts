@@ -42,6 +42,11 @@ export const ingredientSchema = createSelectSchema(ingredients)
 
 export const ingredientsSchema = z.array(ingredientSchema);
 
+export const recipeWithIngredientsSchema = z.object({
+  recipe: recipeSchema,
+  ingredients: ingredientsSchema,
+});
+
 export const recipeIngredientSchema = createSelectSchema(recipeIngredients);
 
 export const recipeIngredientsSchema = z.array(recipeIngredientSchema);
@@ -106,7 +111,4 @@ export type RecipeFilters = {
   maxCalories?: number;
   tags?: string[];
 };
-export type RecipeWithIngredients = {
-  recipe: Recipe;
-  ingredients?: Ingredient[];
-};
+export type RecipeWithIngredients = z.infer<typeof recipeWithIngredientsSchema>;

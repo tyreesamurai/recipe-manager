@@ -14,13 +14,13 @@ export async function RecipeCardSection({
 
   logger.info("filters: %s", JSON.stringify(filters));
 
-  const recipes = await api.recipes.query(filters);
+  const recipesResult = await api.recipes.query(filters);
 
-  if (recipes.length === 0) {
+  if (!recipesResult.ok || recipesResult.data.length === 0) {
     return <p>No recipes found.</p>;
   }
 
-  return recipes.map((recipe) => (
+  return recipesResult.data.map((recipe) => (
     <div key={recipe.id}>
       <RecipeCard recipe={recipe} />
     </div>
