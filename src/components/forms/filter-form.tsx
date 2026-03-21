@@ -39,7 +39,7 @@ export function FilterForm() {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     const qs = buildRecipeFilterQuery(data);
-    router.push(qs ? `/?{qs}` : "/");
+    router.push(qs ? `/?${qs}` : "/");
   }
 
   return (

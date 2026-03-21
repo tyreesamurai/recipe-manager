@@ -21,7 +21,7 @@ const queryRecipes = async (
   const conditions: SQL[] = [];
 
   if (normalizedName) {
-    conditions.push(sql`${schema.recipes.name} ILIKE ${"%" + normalizedName + "%"}`);
+    conditions.push(sql`${schema.recipes.name} ILIKE ${`%${normalizedName}%`}`);
   }
 
   if (typeof filters.maxTime === "number") {

@@ -68,14 +68,17 @@ mock.module("@/db/index", () => ({
   },
 }));
 
-const { upsertIngredient, insertRecipeIngredient, upsertRecipe } =
-  await import("../inserts");
+const { upsertIngredient, insertRecipeIngredient, upsertRecipe } = await import(
+  "../inserts"
+);
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function resetInsert(rows: Record<string, unknown>[] = [{ id: 1, name: "test" }]) {
+function resetInsert(
+  rows: Record<string, unknown>[] = [{ id: 1, name: "test" }],
+) {
   insertState.returnRows = rows;
   insertState.shouldThrow = false;
 }

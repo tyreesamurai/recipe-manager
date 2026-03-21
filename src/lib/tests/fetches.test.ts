@@ -23,6 +23,7 @@ function makeSelectChain() {
   ] as const) {
     chain[method] = () => chain;
   }
+  // biome-ignore lint/suspicious/noThenProperty: intentional thenable mock for Drizzle query chain
   chain.then = (
     resolve: (v: unknown) => unknown,
     reject: (e: unknown) => unknown,
