@@ -13,6 +13,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { type Ingredient, type Recipe, recipeSchema } from "@/lib/types";
 
@@ -97,13 +98,10 @@ export function CreateRecipeForm(props: {
 
     const recipePayload: Recipe = {
       name: data.name.trim(),
-
       ...(data.description?.trim() && { description: data.description.trim() }),
       ...(instructions.length > 0 && { instructions }),
-
       ...(data.nutrition?.calories ? { nutrition: data.nutrition } : {}),
       ...(data.cookingTimes?.total ? { cookingTimes: data.cookingTimes } : {}),
-
       ...(data.inputUrl?.trim() && { inputUrl: data.inputUrl.trim() }),
       ...(data.imageUrl?.trim() && { imageUrl: data.imageUrl.trim() }),
     };
@@ -121,230 +119,41 @@ export function CreateRecipeForm(props: {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup>
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="name">Name</FieldLabel>
-              <Input {...field} aria-invalid={fieldState.invalid} />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <Tabs defaultValue="basics">
+        <TabsList className="w-full grid grid-cols-4">
+          <TabsTrigger value="basics">Basics</TabsTrigger>
+          <TabsTrigger value="instructions">Instructions</TabsTrigger>
+          <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
+          <TabsTrigger value="details">Details</TabsTrigger>
+        </TabsList>
 
-        <Controller
-          name="description"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="description">Description</FieldLabel>
-              <Textarea {...field} aria-invalid={fieldState.invalid} />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-
-        {instructionFields.map((item, index) => (
-          <div key={item.id}>
-            <Controller
-              control={form.control}
-              name={`instructions.${index}.text`}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`instructions.${index}`}>
-                    Step {index + 1}
-                  </FieldLabel>
-                  <Textarea {...field} aria-invalid={fieldState.invalid} />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            {index === instructionFields.length - 1 && (
-              <Button
-                type="button"
-                size="icon"
-                onClick={() => appendInstruction({ text: "" })}
-              >
-                <Plus />
-              </Button>
-            )}
-
-            <Button
-              type="button"
-              size="icon"
-              onClick={() => index > 0 && removeInstruction(index)}
-            >
-              <Minus />
-            </Button>
+        {/* ── Tab 1: Basics ─────────────────────────────────────── */}
+        <TabsContent value="basics" className="pt-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">Basic Info</h2>
+            <p className="text-sm text-muted-foreground">
+              Give your recipe a name and a short description.
+            </p>
           </div>
-        ))}
 
-        <div className="flex">
-          <Controller
-            name="nutrition.calories"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="nutrition.calories">Calories</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="nutrition.protein"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="nutrition.protein">Protein</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="nutrition.fats"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="nutrition.fats">Fats</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="nutrition.carbs"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="nutrition.carbs">Carbs</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-        </div>
-
-        <div className="flex">
-          <Controller
-            name="cookingTimes.prep"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="cookingTimes.prep">Prep Time</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="cookingTimes.cook"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="cookingTimes.cook">Cook Time</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="cookingTimes.total"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="cookingTimes.total">Total Time</FieldLabel>
-                <Input
-                  {...field}
-                  type="number"
-                  onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-        </div>
-
-        {ingredientFields.map((item, index) => (
-          <div key={item.id} className="flex">
+          <FieldGroup>
             <Controller
-              name={`ingredients.${index}.name`}
+              name="name"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`ingredients.${index}.name`}>
-                    Ingredient Name
-                  </FieldLabel>
-                  <Input {...field} />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name={`ingredients.${index}.quantity`}
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`ingredients.${index}.quantity`}>
-                    Quantity
+                  <FieldLabel htmlFor="name">
+                    Recipe Name{" "}
+                    <span className="text-destructive" aria-hidden="true">
+                      *
+                    </span>
                   </FieldLabel>
                   <Input
                     {...field}
-                    type="number"
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                    id="name"
+                    placeholder="e.g. Spaghetti Carbonara"
+                    aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -354,65 +163,358 @@ export function CreateRecipeForm(props: {
             />
 
             <Controller
-              name={`ingredients.${index}.unit`}
+              name="description"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={`ingredients.${index}.unit`}>
-                    Unit
-                  </FieldLabel>
-                  <Input {...field} />
+                  <FieldLabel htmlFor="description">Description</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="description"
+                    placeholder="A brief description of the recipe…"
+                    className="resize-none"
+                    rows={4}
+                    aria-invalid={fieldState.invalid}
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
             />
+          </FieldGroup>
+        </TabsContent>
 
-            {index === ingredientFields.length - 1 && (
-              <Button
-                type="button"
-                onClick={() =>
-                  appendIngredient({ name: "", quantity: 0, unit: "" })
-                }
-              >
-                <Plus />
-              </Button>
-            )}
+        {/* ── Tab 2: Instructions ───────────────────────────────── */}
+        <TabsContent value="instructions" className="pt-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">Instructions</h2>
+            <p className="text-sm text-muted-foreground">
+              Add each step of your recipe in order.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {instructionFields.map((item, index) => (
+              <div key={item.id} className="flex gap-3 items-start">
+                {/* Step number */}
+                <span className="mt-8 flex-shrink-0 w-7 h-7 rounded-full bg-muted text-muted-foreground text-xs font-semibold flex items-center justify-center">
+                  {index + 1}
+                </span>
+
+                <Controller
+                  control={form.control}
+                  name={`instructions.${index}.text`}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} className="flex-1">
+                      <FieldLabel htmlFor={`instructions.${index}.text`}>
+                        Step {index + 1}
+                      </FieldLabel>
+                      <Textarea
+                        {...field}
+                        id={`instructions.${index}.text`}
+                        placeholder="Describe this step…"
+                        className="resize-none"
+                        rows={2}
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="mt-8 text-muted-foreground hover:text-destructive"
+                  disabled={index === 0}
+                  onClick={() => removeInstruction(index)}
+                  aria-label={`Remove step ${index + 1}`}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
             <Button
               type="button"
-              onClick={() => index > 0 && removeIngredient(index)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => appendInstruction({ text: "" })}
             >
-              <Minus />
+              <Plus className="h-4 w-4" />
+              Add Step
             </Button>
           </div>
-        ))}
+        </TabsContent>
 
-        <Controller
-          name="imageUrl"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="imageUrl">Image URL</FieldLabel>
-              <Input {...field} />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
+        {/* ── Tab 3: Ingredients ────────────────────────────────── */}
+        <TabsContent value="ingredients" className="pt-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">Ingredients</h2>
+            <p className="text-sm text-muted-foreground">
+              List every ingredient with its quantity and unit.
+            </p>
+          </div>
 
-        <Controller
-          name="inputUrl"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="inputUrl">Input URL</FieldLabel>
-              <Input {...field} />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-      </FieldGroup>
-      <Button>Submit</Button>
+          <div className="space-y-3">
+            {/* Column headers */}
+            <div className="grid grid-cols-[1fr_100px_100px_36px] gap-2 px-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Ingredient
+              </span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Qty
+              </span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Unit
+              </span>
+              <span />
+            </div>
+
+            {ingredientFields.map((item, index) => (
+              <div
+                key={item.id}
+                className="grid grid-cols-[1fr_100px_100px_36px] gap-2 items-start"
+              >
+                <Controller
+                  name={`ingredients.${index}.name`}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel
+                        className="sr-only"
+                        htmlFor={`ingredients.${index}.name`}
+                      >
+                        Ingredient name
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        id={`ingredients.${index}.name`}
+                        placeholder="e.g. flour"
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name={`ingredients.${index}.quantity`}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel
+                        className="sr-only"
+                        htmlFor={`ingredients.${index}.quantity`}
+                      >
+                        Quantity
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        id={`ingredients.${index}.quantity`}
+                        type="number"
+                        min={0}
+                        placeholder="0"
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name={`ingredients.${index}.unit`}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel
+                        className="sr-only"
+                        htmlFor={`ingredients.${index}.unit`}
+                      >
+                        Unit
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        id={`ingredients.${index}.unit`}
+                        placeholder="g, cup…"
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="mt-0.5 text-muted-foreground hover:text-destructive"
+                  disabled={index === 0}
+                  onClick={() => removeIngredient(index)}
+                  aria-label={`Remove ingredient ${index + 1}`}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() =>
+                appendIngredient({ name: "", quantity: 0, unit: "" })
+              }
+            >
+              <Plus className="h-4 w-4" />
+              Add Ingredient
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ── Tab 4: Details ────────────────────────────────────── */}
+        <TabsContent value="details" className="pt-6 space-y-8">
+          {/* Nutrition */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Nutrition</h2>
+              <p className="text-sm text-muted-foreground">
+                Optional — per serving values.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {(
+                [
+                  { name: "nutrition.calories", label: "Calories" },
+                  { name: "nutrition.protein", label: "Protein (g)" },
+                  { name: "nutrition.fats", label: "Fats (g)" },
+                  { name: "nutrition.carbs", label: "Carbs (g)" },
+                ] as const
+              ).map(({ name, label }) => (
+                <Controller
+                  key={name}
+                  name={name}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={name}>{label}</FieldLabel>
+                      <Input
+                        {...field}
+                        id={name}
+                        type="number"
+                        min={0}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Cooking times */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Cooking Times</h2>
+              <p className="text-sm text-muted-foreground">
+                All values in minutes.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              {(
+                [
+                  { name: "cookingTimes.prep", label: "Prep" },
+                  { name: "cookingTimes.cook", label: "Cook" },
+                  { name: "cookingTimes.total", label: "Total" },
+                ] as const
+              ).map(({ name, label }) => (
+                <Controller
+                  key={name}
+                  name={name}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={name}>{label}</FieldLabel>
+                      <Input
+                        {...field}
+                        id={name}
+                        type="number"
+                        min={0}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Source URLs */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Sources</h2>
+              <p className="text-sm text-muted-foreground">
+                Optional — link to the original recipe or an image.
+              </p>
+            </div>
+
+            <FieldGroup>
+              <Controller
+                name="imageUrl"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="imageUrl">Image URL</FieldLabel>
+                    <Input {...field} id="imageUrl" placeholder="https://…" />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="inputUrl"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="inputUrl">Source URL</FieldLabel>
+                    <Input {...field} id="inputUrl" placeholder="https://…" />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Submit — always visible */}
+      <div className="pt-2 border-t">
+        <Button type="submit" className="w-full sm:w-auto">
+          Save Recipe
+        </Button>
+      </div>
     </form>
   );
 }

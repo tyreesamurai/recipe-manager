@@ -5,12 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { buildRecipeFilterQuery } from "@/lib/filters";
 import { helpers } from "@/lib/helpers";
@@ -43,53 +38,72 @@ export function FilterForm() {
   }
 
   return (
-    <div>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FieldGroup>
-          <FieldLegend>Filter Section</FieldLegend>
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="name">Recipe Name</FieldLabel>
-                <Input
-                  {...field}
-                  id="name"
-                  autoComplete="off"
-                  placeholder="Nothing"
-                />
-              </Field>
-            )}
-          />
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1">
+      <FieldGroup>
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="name">Recipe Name</FieldLabel>
+              <Input
+                {...field}
+                id="name"
+                autoComplete="off"
+                placeholder="e.g. pasta"
+              />
+            </Field>
+          )}
+        />
 
-          <Controller
-            name="maxTime"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="maxTime">Max Time</FieldLabel>
-                <Input {...field} id="maxTime" type="number" />
-              </Field>
-            )}
-          />
+        <Controller
+          name="maxTime"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="maxTime">Max Time (min)</FieldLabel>
+              <Input
+                {...field}
+                id="maxTime"
+                type="number"
+                min={0}
+                placeholder="e.g. 30"
+              />
+            </Field>
+          )}
+        />
 
-          <Controller
-            name="maxCalories"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="maxCalories">Max Calories</FieldLabel>
-                <Input {...field} id="maxCalories" type="number" />
-              </Field>
-            )}
-          />
-        </FieldGroup>
-        <Button type="submit">Apply</Button>
-      </form>
-      <Button type="submit" onClick={() => router.push("/")}>
-        Reset
-      </Button>
-    </div>
+        <Controller
+          name="maxCalories"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="maxCalories">Max Calories</FieldLabel>
+              <Input
+                {...field}
+                id="maxCalories"
+                type="number"
+                min={0}
+                placeholder="e.g. 600"
+              />
+            </Field>
+          )}
+        />
+      </FieldGroup>
+
+      <div className="flex gap-2 pt-2">
+        <Button type="submit" size="sm" className="flex-1">
+          Apply
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => router.push("/")}
+        >
+          Reset
+        </Button>
+      </div>
+    </form>
   );
 }

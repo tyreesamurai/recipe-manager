@@ -29,11 +29,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
         <Providers>
-          <NavBar />
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <NavBar />
+            <main className="flex-1">{children}</main>
+          </div>
           <Toaster />
         </Providers>
       </body>

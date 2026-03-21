@@ -1,7 +1,10 @@
+import { ComingSoon } from "@/components/coming-soon";
+
 export default function Planner() {
   return (
-    <div>
-      <h1>This is the planner section</h1>
-    </div>
+    <ComingSoon
+      feature="Meal Planner"
+      description="Plan your week's meals, build shopping lists automatically, and stay on track. Coming soon."
+    />
   );
 }
