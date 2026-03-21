@@ -20,20 +20,8 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install Dependencies
+      - name: Run Lint/Typecheck/Test
         run: bun ci
-
-      - name: Biome (format/lint)
-        run: bunx biome check .
-
-      - name: Lint
-        run: bun run lint
-
-      - name: TypeCheck
-        run: bun run typecheck
-
-      - name: Tests
-        run: bun test
 
   ci:
     uses: tyreesamurai/ci-cd/.github/workflows/build-and-push.yml@main
