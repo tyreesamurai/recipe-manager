@@ -21,19 +21,10 @@ jobs:
           bun-version: latest
 
       - name: Install Dependencies
-        run: bun ci
+        run: bun install --frozen-lockfile
 
-      - name: Biome (format/lint)
-        run: bunx biome check .
-
-      - name: Lint
-        run: bun run lint
-
-      - name: TypeCheck
-        run: bun run typecheck
-
-      - name: Tests
-        run: bun test
+      - name: CI
+        run: bun run ci
 
   ci:
     uses: tyreesamurai/ci-cd/.github/workflows/build-and-push.yml@main
