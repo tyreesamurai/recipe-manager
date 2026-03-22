@@ -1,7 +1,7 @@
 import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import type { db } from "@/db/index";
-import { ingredients, recipeIngredients, recipes } from "@/db/schema";
+import { recipeIngredients, recipes } from "@/db/schema";
 import type { AppError } from "@/lib/errors";
 
 const nutritionSchema = z
@@ -31,14 +31,15 @@ export const recipeSchema = createSelectSchema(recipes)
 
 export const recipesSchema = z.array(recipeSchema);
 
-export const ingredientSchema = createSelectSchema(ingredients)
-  .extend({
-    nutrition: nutritionSchema,
-    quantity: z.number().nonnegative(),
-    unit: z.string(),
-  })
-  .partial()
-  .required({ name: true });
+export const ingredientSchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  description: z.string().nullish(),
+  nutrition: nutritionSchema,
+  imageUrl: z.string().nullish(),
+  quantity: z.number().nonnegative().nullish(),
+  unit: z.string().nullish(),
+});
 
 export const ingredientsSchema = z.array(ingredientSchema);
 

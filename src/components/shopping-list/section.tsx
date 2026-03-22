@@ -91,9 +91,12 @@ export function ShoppingListSection() {
           className="flex items-center justify-between py-3 gap-4"
         >
           <span className="font-medium text-sm">{ingredient.name}</span>
-          <span className="text-sm text-muted-foreground shrink-0">
-            {ingredient.quantity} {ingredient.unit}
-          </span>
+          {(ingredient.quantity || ingredient.unit) && (
+            <span className="text-sm text-muted-foreground shrink-0">
+              {ingredient.quantity ? ingredient.quantity : ""}{" "}
+              {ingredient.unit ?? ""}
+            </span>
+          )}
         </li>
       ))}
     </ul>

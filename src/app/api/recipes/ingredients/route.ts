@@ -9,6 +9,8 @@ export async function POST(request: Request) {
 
   const result = await api.recipes.getIngredientsForRecipes(ids);
 
+  console.log(result);
+
   if (!result.ok) {
     return Response.json(
       { error: result.error },

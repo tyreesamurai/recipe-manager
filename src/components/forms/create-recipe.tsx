@@ -19,18 +19,34 @@ import { type Ingredient, type Recipe, recipeSchema } from "@/lib/types";
 
 const formSchema = recipeSchema.extend({
   description: z.string().optional(),
-  instructions: z.array(z.object({ text: z.string() })).optional(),
+  instructions: z.array(z.object({ text: z.string() })),
   inputUrl: z.string().optional(),
   imageUrl: z.string().optional(),
-  ingredients: z
-    .array(
-      z.object({
-        name: z.string(),
-        quantity: z.number().nonnegative().optional(),
-        unit: z.string().optional(),
-      }),
-    )
-    .nullish(),
+  nutrition: z
+    .object({
+      calories: z.number().nonnegative(),
+      protein: z.number().nonnegative().optional(),
+      fats: z.number().nonnegative().optional(),
+      carbs: z.number().nonnegative().optional(),
+    })
+    .optional(),
+  cookingTimes: z
+    .object({
+      total: z.number().nonnegative(),
+      prep: z.number().nonnegative().optional(),
+      cook: z.number().nonnegative().optional(),
+      additional: z.number().nonnegative().optional(),
+      rest: z.number().nonnegative().optional(),
+      cool: z.number().nonnegative().optional(),
+    })
+    .optional(),
+  ingredients: z.array(
+    z.object({
+      name: z.string(),
+      quantity: z.number().nonnegative().optional(),
+      unit: z.string().optional(),
+    }),
+  ),
 });
 
 export function CreateRecipeForm(props: {
@@ -61,7 +77,11 @@ export function CreateRecipeForm(props: {
       },
       imageUrl: props.recipe?.imageUrl ?? "",
       inputUrl: props.recipe?.inputUrl ?? "",
-      ingredients: props.ingredients ?? [{ name: "", quantity: 0, unit: "" }],
+      ingredients: props.ingredients?.map((i) => ({
+        name: i.name,
+        quantity: i.quantity ?? 0,
+        unit: i.unit ?? "",
+      })) ?? [{ name: "", quantity: 0, unit: "" }],
     },
   });
 
@@ -128,7 +148,6 @@ export function CreateRecipeForm(props: {
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
-        {/* ── Tab 1: Basics ─────────────────────────────────────── */}
         <TabsContent value="basics" className="pt-6 space-y-6">
           <div>
             <h2 className="text-lg font-semibold mb-1">Basic Info</h2>
@@ -185,7 +204,6 @@ export function CreateRecipeForm(props: {
           </FieldGroup>
         </TabsContent>
 
-        {/* ── Tab 2: Instructions ───────────────────────────────── */}
         <TabsContent value="instructions" className="pt-6 space-y-6">
           <div>
             <h2 className="text-lg font-semibold mb-1">Instructions</h2>
@@ -197,7 +215,6 @@ export function CreateRecipeForm(props: {
           <div className="space-y-3">
             {instructionFields.map((item, index) => (
               <div key={item.id} className="flex gap-3 items-start">
-                {/* Step number */}
                 <span className="mt-8 flex-shrink-0 w-7 h-7 rounded-full bg-muted text-muted-foreground text-xs font-semibold flex items-center justify-center">
                   {index + 1}
                 </span>
@@ -252,7 +269,6 @@ export function CreateRecipeForm(props: {
           </div>
         </TabsContent>
 
-        {/* ── Tab 3: Ingredients ────────────────────────────────── */}
         <TabsContent value="ingredients" className="pt-6 space-y-6">
           <div>
             <h2 className="text-lg font-semibold mb-1">Ingredients</h2>
@@ -382,9 +398,7 @@ export function CreateRecipeForm(props: {
           </div>
         </TabsContent>
 
-        {/* ── Tab 4: Details ────────────────────────────────────── */}
         <TabsContent value="details" className="pt-6 space-y-8">
-          {/* Nutrition */}
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold mb-1">Nutrition</h2>
@@ -426,7 +440,6 @@ export function CreateRecipeForm(props: {
             </div>
           </div>
 
-          {/* Cooking times */}
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold mb-1">Cooking Times</h2>
@@ -467,7 +480,6 @@ export function CreateRecipeForm(props: {
             </div>
           </div>
 
-          {/* Source URLs */}
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold mb-1">Sources</h2>
@@ -509,7 +521,6 @@ export function CreateRecipeForm(props: {
         </TabsContent>
       </Tabs>
 
-      {/* Submit — always visible */}
       <div className="pt-2 border-t">
         <Button type="submit" className="w-full sm:w-auto">
           Save Recipe

@@ -35,10 +35,10 @@ export function CartButton() {
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="flex flex-col gap-0">
+      <SheetContent className="flex flex-col gap-0 px-6">
         {/* Header */}
-        <div className="pb-4 border-b">
-          <SheetTitle>My Cart</SheetTitle>
+        <div className="pt-6 pb-4 pl-2 border-b">
+          <SheetTitle className="text-lg">My Cart</SheetTitle>
           <SheetDescription>
             {items.length === 0
               ? "No recipes selected yet."
@@ -47,7 +47,7 @@ export function CartButton() {
         </div>
 
         {/* Recipe list */}
-        <div className="flex-1 overflow-y-auto py-3">
+        <div className="flex-1 overflow-y-auto py-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
@@ -62,7 +62,7 @@ export function CartButton() {
               {items.map((recipe) => (
                 <li
                   key={recipe.id}
-                  className="flex items-center gap-3 px-1 py-2.5 rounded-lg hover:bg-muted/60 group transition-colors"
+                  className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/60 group transition-colors"
                 >
                   {/* Recipe icon */}
                   <div className="shrink-0 h-8 w-8 rounded-md bg-muted flex items-center justify-center">
@@ -78,7 +78,7 @@ export function CartButton() {
                   <button
                     type="button"
                     onClick={() => remove(recipe.id)}
-                    className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-foreground rounded-sm"
+                    className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-foreground rounded-sm p-0.5"
                     aria-label={`Remove ${recipe.name} from cart`}
                   >
                     <X className="h-3.5 w-3.5" />
@@ -91,7 +91,7 @@ export function CartButton() {
 
         {/* Footer CTA */}
         {items.length > 0 && (
-          <div className="pt-4 border-t space-y-2">
+          <div className="pt-4 pb-6 border-t">
             <SheetClose asChild>
               <Button
                 className="w-full"
