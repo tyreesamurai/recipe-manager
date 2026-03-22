@@ -1,9 +1,7 @@
-name: test & build
+name: CI / CD
 on:
   push:
-    branches: ["dev"]
-  pull_request:
-    branches: ["dev"]
+    branches: ["dev", "main"]
 
 permissions:
   contents: read
@@ -15,17 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
       - name: Install Dependencies
         run: bun install --frozen-lockfile
-
       - name: CI
         run: bun run ci
 
-  ci:
-    uses: tyreesamurai/ci-cd/.github/workflows/build-and-push.yml@main
+  build:
     needs: quality
+    uses: tyreesamurai/ci-cd/.github/workflows/build-and-push.yml@main
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    uses: tyreesamurai/ci-cd/.github/workflows/deploy.yml@main
+    with:
+      service_path: /srv/services/recipes
+    secrets: inherit
