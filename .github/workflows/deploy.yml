@@ -1,10 +1,19 @@
 name: deploy
 on:
-  pull_request:
+  push:
     branches: ["main"]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  cd:
+  ci:
     uses: tyreesamurai/ci-cd/.github/workflows/build-and-push.yml@main
+
+  deploy:
+    needs: ci
+    uses: tyreesamurai/ci-cd/.github/workflows/deploy.yml@main
     with:
-      service_path: "/srv/services/recipes"
+      service_path: /srv/services/recipes
+    secrets: inherit
