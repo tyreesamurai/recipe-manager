@@ -23,6 +23,7 @@ jobs:
 
   build:
     needs: quality
+    if: github.ref == 'refs/heads/main'
     uses: tyreesamurai/ci-cd/.github/workflows/build-and-push.yml@main
 
   deploy:
