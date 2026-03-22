@@ -2,9 +2,9 @@ import { api } from "@/lib/api";
 
 export async function GET(
   _req: Request,
-  ctx: RouteContext<"/api/recipes/[slug]">,
+  { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await ctx.params;
+  const { slug } = await params;
 
   const recipe = await api.recipes.get(slug);
 
