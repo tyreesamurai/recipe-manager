@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Minus, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -53,6 +54,7 @@ export function CreateRecipeForm(props: {
   recipe?: Recipe;
   ingredients?: Ingredient[];
 }) {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -135,7 +137,19 @@ export function CreateRecipeForm(props: {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    }).then((response) => toast(JSON.stringify(response)));
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          toast.error("Failed to save recipe", {
+            description: data.error.message,
+          });
+        } else {
+          toast.success(props.recipe ? "Recipe updated!" : "Recipe created!");
+          router.push(`/${data.result.recipeName.replaceAll(" ", "-")}`);
+        }
+      })
+      .catch(() => toast.error("Failed to save recipe"));
   }
 
   return (

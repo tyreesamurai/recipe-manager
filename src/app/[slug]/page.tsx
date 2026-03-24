@@ -3,6 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
+import { RecipeActions } from "./recipe-actions";
 
 export default async function RecipePage({
   params,
@@ -42,9 +43,12 @@ export default async function RecipePage({
     <article className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
       {/* Hero */}
       <header className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight leading-tight mb-3">
-          {recipe.name}
-        </h1>
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <h1 className="text-4xl font-bold tracking-tight leading-tight">
+            {recipe.name}
+          </h1>
+          <RecipeActions slug={slug} />
+        </div>
 
         {recipe.description && (
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">

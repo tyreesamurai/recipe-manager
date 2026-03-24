@@ -96,6 +96,28 @@ export const upsertRecipe = async (
   }
 };
 
+export const deleteRecipe = async (id: number): Promise<Result<void>> => {
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(schema.recipeIngredients)
+        .where(eq(schema.recipeIngredients.recipeId, id));
+      await tx.delete(schema.recipes).where(eq(schema.recipes.id, id));
+    });
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to delete recipe",
+        cause: err,
+      }),
+    };
+  }
+};
+
 export const upsertIngredient = async (
   ingredient: Ingredient,
 ): Promise<Result<Ingredient>> => {

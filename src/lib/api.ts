@@ -86,6 +86,7 @@ export const api = {
     getByName: fetcher.fetchRecipeByName,
     get: fetcher.fetchRecipe,
     upsert: inserter.upsertRecipe,
+    delete: inserter.deleteRecipe,
     query: queryRecipes,
     getIngredients: fetcher.getIngredients,
     getIngredientsForRecipes: fetcher.getIngredientsForRecipes,
