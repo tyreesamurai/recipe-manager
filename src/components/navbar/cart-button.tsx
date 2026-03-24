@@ -12,7 +12,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/cart-provider";
-
 export function CartButton() {
   const router = useRouter();
   const { items, remove } = useCart();
@@ -36,7 +35,6 @@ export function CartButton() {
       </SheetTrigger>
 
       <SheetContent className="flex flex-col gap-0 px-6">
-        {/* Header */}
         <div className="pt-6 pb-4 pl-2 border-b">
           <SheetTitle className="text-lg">My Cart</SheetTitle>
           <SheetDescription>
@@ -46,14 +44,13 @@ export function CartButton() {
           </SheetDescription>
         </div>
 
-        {/* Recipe list */}
         <div className="flex-1 overflow-y-auto py-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                 <ShoppingCart className="h-5 w-5 text-muted-foreground" />
               </div>
-              <p className="text-sm text-muted-foreground max-w-[160px]">
+              <p className="text-sm text-muted-foreground max-w-40">
                 Add recipes from the home page to get started.
               </p>
             </div>
@@ -64,17 +61,14 @@ export function CartButton() {
                   key={recipe.id}
                   className="flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-muted/60 group transition-colors"
                 >
-                  {/* Recipe icon */}
                   <div className="shrink-0 h-8 w-8 rounded-md bg-muted flex items-center justify-center">
                     <UtensilsCrossed className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
 
-                  {/* Name */}
                   <span className="flex-1 text-sm font-medium leading-snug line-clamp-2 min-w-0">
                     {recipe.name}
                   </span>
 
-                  {/* Remove button */}
                   <button
                     type="button"
                     onClick={() => remove(recipe.id)}
@@ -89,7 +83,6 @@ export function CartButton() {
           )}
         </div>
 
-        {/* Footer CTA */}
         {items.length > 0 && (
           <div className="pt-4 pb-6 border-t">
             <SheetClose asChild>
