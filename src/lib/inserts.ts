@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/index";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -85,22 +85,42 @@ export const upsertRecipe = async (
           .where(eq(schema.recipeIngredients.recipeId, returnedRecipe.id));
 
         for (const ing of ingredients) {
-          const [returnedIngredient] = await tx
-            .insert(schema.ingredients)
-            .values(ing)
-            .onConflictDoUpdate({
-              target: schema.ingredients.name,
-              set: {
-                name: ing.name.trim(),
-                ...(ing.description && { description: ing.description }),
-                ...(ing.nutrition && { nutrition: ing.nutrition }),
-                ...(ing.imageUrl && { imageUrl: ing.imageUrl }),
-              },
-            })
-            .returning({
-              id: schema.ingredients.id,
-              name: schema.ingredients.name,
-            });
+          // Check for a sufficiently similar existing ingredient (pg_trgm, threshold 0.75)
+          // This prevents near-duplicate ingredients like "chicken breast" / "chicken breasts"
+          const similar = await tx.execute(sql`
+            SELECT id, name FROM ingredients
+            WHERE similarity(lower(name), lower(${ing.name.trim()})) > 0.75
+            ORDER BY similarity(lower(name), lower(${ing.name.trim()})) DESC
+            LIMIT 1
+          `);
+          const similarRow = similar.rows?.[0] as
+            | { id: number; name: string }
+            | undefined;
+
+          let returnedIngredient: { id: number; name: string };
+
+          if (similarRow) {
+            // Reuse the existing ingredient rather than creating a near-duplicate
+            returnedIngredient = similarRow;
+          } else {
+            const [inserted] = await tx
+              .insert(schema.ingredients)
+              .values(ing)
+              .onConflictDoUpdate({
+                target: schema.ingredients.name,
+                set: {
+                  name: ing.name.trim(),
+                  ...(ing.description && { description: ing.description }),
+                  ...(ing.nutrition && { nutrition: ing.nutrition }),
+                  ...(ing.imageUrl && { imageUrl: ing.imageUrl }),
+                },
+              })
+              .returning({
+                id: schema.ingredients.id,
+                name: schema.ingredients.name,
+              });
+            returnedIngredient = inserted;
+          }
 
           await tx.insert(schema.recipeIngredients).values({
             recipeId: returnedRecipe.id,
