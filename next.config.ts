@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import withSerwist from "@serwist/next";
+import type { NextConfig } from "next";
 
 const baseConfig: NextConfig = {
   allowedDevOrigins: ["dev.juntos.casa"],
