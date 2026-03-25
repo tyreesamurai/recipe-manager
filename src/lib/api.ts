@@ -5,6 +5,7 @@ import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import * as fetcher from "@/lib/fetches";
 import * as inserter from "@/lib/inserts";
+
 import type { Recipe, RecipeFilters, Result } from "@/lib/types";
 import { recipesSchema } from "@/lib/types";
 
@@ -156,5 +157,23 @@ export const api = {
     getForRecipe: fetcher.getTagsForRecipe,
     getForRecipes: fetcher.getTagsForRecipes,
     upsert: inserter.upsertTag,
+  },
+  planner: {
+    getEntries: fetcher.getMealPlanEntries,
+    getSelectedRecipes: fetcher.getSelectedRecipesFromPlanner,
+    addEntry: inserter.addMealPlanEntry,
+    removeEntry: inserter.removeMealPlanEntry,
+  },
+  shoppingList: {
+    getSelected: fetcher.getSelectedRecipes,
+    getExtras: fetcher.getShoppingListExtras,
+    getCheckedNames: fetcher.getShoppingListCheckedNames,
+    addSelected: inserter.addSelectedRecipe,
+    removeSelected: inserter.removeSelectedRecipe,
+    clearSelected: inserter.clearSelectedRecipes,
+    addExtra: inserter.addShoppingListExtra,
+    deleteExtra: inserter.deleteShoppingListExtra,
+    toggleCheck: inserter.toggleShoppingListCheck,
+    clear: inserter.clearShoppingList,
   },
 };

@@ -7,11 +7,13 @@ import type {
   RecipeIngredient,
   RecipeWithIngredients,
   Result,
+  ShoppingListExtra,
   Tag,
 } from "@/lib/types";
 import {
   ingredientSchema,
   recipeIngredientSchema,
+  shoppingListExtraSchema,
   tagSchema,
 } from "@/lib/types";
 
@@ -251,6 +253,226 @@ export const insertRecipeIngredient = async (
         code: "INTERNAL",
         status: 500,
         message: "Failed to upsert ingredient",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const addSelectedRecipe = async (
+  recipeId: number,
+): Promise<Result<void>> => {
+  try {
+    await db
+      .insert(schema.selectedRecipes)
+      .values({ recipeId })
+      .onConflictDoNothing();
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to add selected recipe",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const removeSelectedRecipe = async (
+  recipeId: number,
+): Promise<Result<void>> => {
+  try {
+    await db
+      .delete(schema.selectedRecipes)
+      .where(eq(schema.selectedRecipes.recipeId, recipeId));
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to remove selected recipe",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const clearSelectedRecipes = async (): Promise<Result<void>> => {
+  try {
+    await db.delete(schema.selectedRecipes);
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to clear selected recipes",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const addShoppingListExtra = async (
+  name: string,
+  quantity?: number,
+  unit?: string,
+): Promise<Result<ShoppingListExtra>> => {
+  try {
+    const [row] = await db
+      .insert(schema.shoppingListExtras)
+      .values({
+        name: name.trim(),
+        quantity: quantity ?? null,
+        unit: unit?.trim() ?? null,
+      })
+      .returning();
+
+    const parsed = shoppingListExtraSchema.safeParse(row);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to parse shopping list extra",
+          cause: parsed.error,
+        }),
+      };
+    }
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to add shopping list extra",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const deleteShoppingListExtra = async (
+  id: number,
+): Promise<Result<void>> => {
+  try {
+    await db
+      .delete(schema.shoppingListExtras)
+      .where(eq(schema.shoppingListExtras.id, id));
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to delete shopping list extra",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const toggleShoppingListCheck = async (
+  name: string,
+  checked: boolean,
+): Promise<Result<void>> => {
+  try {
+    if (checked) {
+      await db
+        .insert(schema.shoppingListChecks)
+        .values({ name })
+        .onConflictDoNothing();
+    } else {
+      await db
+        .delete(schema.shoppingListChecks)
+        .where(eq(schema.shoppingListChecks.name, name));
+    }
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to toggle shopping list check",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const clearShoppingList = async (): Promise<Result<void>> => {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.delete(schema.selectedRecipes);
+      await tx.delete(schema.shoppingListExtras);
+      await tx.delete(schema.shoppingListChecks);
+    });
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to clear shopping list",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const addMealPlanEntry = async (
+  weekStart: string,
+  day: number,
+  mealSlot: string,
+  recipeId: number,
+): Promise<Result<{ id: number }>> => {
+  try {
+    const [row] = await db
+      .insert(schema.mealPlanEntries)
+      .values({ weekStart, day, mealSlot, recipeId })
+      .onConflictDoNothing()
+      .returning({ id: schema.mealPlanEntries.id });
+
+    return { ok: true, data: { id: row?.id ?? 0 } };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to add meal plan entry",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const removeMealPlanEntry = async (
+  id: number,
+): Promise<Result<void>> => {
+  try {
+    await db
+      .delete(schema.mealPlanEntries)
+      .where(eq(schema.mealPlanEntries.id, id));
+    return { ok: true, data: undefined };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Failed to remove meal plan entry",
         cause: err,
       }),
     };

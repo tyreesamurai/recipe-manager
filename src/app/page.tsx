@@ -34,6 +34,18 @@ export default async function Home({
             </Suspense>
           </div>
 
+          {/* Shopping list hint */}
+          <p className="text-xs text-muted-foreground mb-4">
+            Check a recipe to add its ingredients to your{" "}
+            <a
+              href="/shopping-list"
+              className="underline underline-offset-2 hover:text-foreground transition-colors"
+            >
+              shopping list
+            </a>
+            .
+          </p>
+
           <Suspense
             fallback={
               <p className="text-muted-foreground text-sm">Loading recipes…</p>

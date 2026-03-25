@@ -1,10 +1,9 @@
-import { ComingSoon } from "@/components/coming-soon";
+import { PlannerClient } from "@/components/planner/planner-client";
 
 export default function Planner() {
   return (
-    <ComingSoon
-      feature="Meal Planner"
-      description="Plan your week's meals, build shopping lists automatically, and stay on track. Coming soon."
-    />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <PlannerClient />
+    </div>
   );
 }

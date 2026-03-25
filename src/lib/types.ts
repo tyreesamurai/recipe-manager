@@ -50,6 +50,43 @@ export const tagsSchema = z.array(tagSchema);
 export type Tag = z.infer<typeof tagSchema>;
 export type Tags = z.infer<typeof tagsSchema>;
 
+export const MEAL_SLOTS = ["breakfast", "lunch", "dinner", "snack"] as const;
+export type MealSlot = (typeof MEAL_SLOTS)[number];
+
+export const mealPlanEntrySchema = z.object({
+  id: z.number(),
+  weekStart: z.string(),
+  day: z.number().int().min(0).max(6),
+  mealSlot: z.enum(MEAL_SLOTS),
+  recipeId: z.number().nullable().optional(),
+  recipe: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      nutrition: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          fats: z.number().optional(),
+          carbs: z.number().optional(),
+        })
+        .nullable()
+        .optional(),
+    })
+    .optional(),
+});
+export const mealPlanEntriesSchema = z.array(mealPlanEntrySchema);
+export type MealPlanEntry = z.infer<typeof mealPlanEntrySchema>;
+
+export const shoppingListExtraSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  quantity: z.number().nullable().optional(),
+  unit: z.string().nullable().optional(),
+});
+export const shoppingListExtrasSchema = z.array(shoppingListExtraSchema);
+export type ShoppingListExtra = z.infer<typeof shoppingListExtraSchema>;
+
 export const recipeWithIngredientsSchema = z.object({
   recipe: recipeSchema,
   ingredients: ingredientsSchema,

@@ -1,10 +1,23 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq, getTableColumns, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db/index";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
-import type { Ingredient, Recipe, Result, Tag } from "@/lib/types";
-import { ingredientSchema, recipeSchema, tagsSchema } from "@/lib/types";
+import type {
+  Ingredient,
+  MealPlanEntry,
+  Recipe,
+  Result,
+  ShoppingListExtra,
+  Tag,
+} from "@/lib/types";
+import {
+  ingredientSchema,
+  mealPlanEntriesSchema,
+  recipeSchema,
+  shoppingListExtrasSchema,
+  tagsSchema,
+} from "@/lib/types";
 
 export const fetchAllRecipes = async (): Promise<Result<Recipe[]>> => {
   try {
@@ -460,6 +473,183 @@ export const getIngredientsForRecipes = async (
         code: "INTERNAL",
         status: 500,
         message: "database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getSelectedRecipes = async (): Promise<Result<Recipe[]>> => {
+  try {
+    const rows = await db
+      .select(getTableColumns(schema.recipes))
+      .from(schema.selectedRecipes)
+      .innerJoin(
+        schema.recipes,
+        eq(schema.recipes.id, schema.selectedRecipes.recipeId),
+      );
+
+    const parsed = z.array(recipeSchema).safeParse(rows);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to parse selected recipes",
+          cause: parsed.error,
+        }),
+      };
+    }
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getShoppingListExtras = async (): Promise<
+  Result<ShoppingListExtra[]>
+> => {
+  try {
+    const rows = await db.select().from(schema.shoppingListExtras);
+    const parsed = shoppingListExtrasSchema.safeParse(rows);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to parse shopping list extras",
+          cause: parsed.error,
+        }),
+      };
+    }
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getShoppingListCheckedNames = async (): Promise<
+  Result<string[]>
+> => {
+  try {
+    const rows = await db.select().from(schema.shoppingListChecks);
+    return { ok: true, data: rows.map((r) => r.name) };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getMealPlanEntries = async (
+  weekStart: string,
+): Promise<Result<MealPlanEntry[]>> => {
+  try {
+    const rows = await db
+      .select({
+        id: schema.mealPlanEntries.id,
+        weekStart: schema.mealPlanEntries.weekStart,
+        day: schema.mealPlanEntries.day,
+        mealSlot: schema.mealPlanEntries.mealSlot,
+        recipeId: schema.mealPlanEntries.recipeId,
+        recipe: {
+          id: schema.recipes.id,
+          name: schema.recipes.name,
+          nutrition: schema.recipes.nutrition,
+        },
+      })
+      .from(schema.mealPlanEntries)
+      .innerJoin(
+        schema.recipes,
+        eq(schema.recipes.id, schema.mealPlanEntries.recipeId),
+      )
+      .where(eq(schema.mealPlanEntries.weekStart, weekStart));
+
+    const parsed = mealPlanEntriesSchema.safeParse(rows);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to parse meal plan entries",
+          cause: parsed.error,
+        }),
+      };
+    }
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getSelectedRecipesFromPlanner = async (): Promise<
+  Result<Recipe[]>
+> => {
+  try {
+    const rows = await db
+      .selectDistinct(getTableColumns(schema.recipes))
+      .from(schema.mealPlanEntries)
+      .innerJoin(
+        schema.recipes,
+        eq(schema.recipes.id, schema.mealPlanEntries.recipeId),
+      )
+      .where(
+        sql`(${schema.mealPlanEntries.weekStart}::date + ${schema.mealPlanEntries.day} * interval '1 day') >= CURRENT_DATE`,
+      );
+
+    const parsed = z.array(recipeSchema).safeParse(rows);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to parse planner recipes",
+          cause: parsed.error,
+        }),
+      };
+    }
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
         cause: err,
       }),
     };

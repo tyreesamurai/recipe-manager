@@ -31,31 +31,48 @@ export function useCart() {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<Recipe[]>(() => {
-    if (typeof window === "undefined") return [];
-    const itemsString = localStorage.getItem("cart");
-    if (!itemsString) return [];
-    try {
-      return JSON.parse(itemsString) as Recipe[];
-    } catch {
-      return [];
-    }
-  });
+  const [items, setItems] = useState<Recipe[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
+    fetch("/api/selected-recipes")
+      .then((r) => r.json())
+      .then((json) => {
+        if (Array.isArray(json.recipes)) {
+          setItems(json.recipes as Recipe[]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const add = (recipe: Recipe) => {
-    setItems((prev) => [...prev, recipe]);
+    if (!recipe.id) return;
+    setItems((prev) => {
+      if (prev.some((r) => r.id === recipe.id)) return prev;
+      return [...prev, recipe];
+    });
+    fetch("/api/selected-recipes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId: recipe.id }),
+    }).catch(() => {});
   };
 
   const remove = (id: Recipe["id"]) => {
     setItems((prev) => prev.filter((r) => r.id !== id));
+    fetch("/api/selected-recipes", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId: id }),
+    }).catch(() => {});
   };
 
   const clear = () => {
     setItems([]);
+    fetch("/api/selected-recipes", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clear: true }),
+    }).catch(() => {});
   };
 
   const value = {

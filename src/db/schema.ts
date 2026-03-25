@@ -1,10 +1,12 @@
 import {
+  date,
   integer,
   jsonb,
   pgTable,
   primaryKey,
   real,
   text,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -77,4 +79,37 @@ export const ingredientTags = pgTable(
     tagId: integer("tag_id").references(() => tags.id),
   },
   (table) => [primaryKey({ columns: [table.ingredientId, table.tagId] })],
+);
+
+export const selectedRecipes = pgTable("selected_recipes", {
+  recipeId: integer("recipe_id")
+    .primaryKey()
+    .references(() => recipes.id),
+});
+
+export const shoppingListExtras = pgTable("shopping_list_extras", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 255 }).notNull(),
+  quantity: real(),
+  unit: varchar({ length: 255 }),
+});
+
+export const shoppingListChecks = pgTable("shopping_list_checks", {
+  name: varchar({ length: 255 }).primaryKey(),
+});
+
+export const mealPlanEntries = pgTable(
+  "meal_plan_entries",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    weekStart: date("week_start").notNull(),
+    day: integer().notNull(), // 0=Mon … 6=Sun
+    mealSlot: varchar("meal_slot", { length: 20 }).notNull(), // breakfast | lunch | dinner | snack
+    recipeId: integer("recipe_id").references(() => recipes.id, {
+      onDelete: "cascade",
+    }),
+  },
+  (table) => [
+    unique().on(table.weekStart, table.day, table.mealSlot, table.recipeId),
+  ],
 );

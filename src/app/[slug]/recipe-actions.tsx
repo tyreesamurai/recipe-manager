@@ -1,5 +1,6 @@
 "use client";
 
+import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -14,9 +15,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/cart-provider";
+import type { Recipe } from "@/lib/types";
 
-export function RecipeActions({ slug }: { slug: string }) {
+export function RecipeActions({
+  slug,
+  recipe,
+}: {
+  slug: string;
+  recipe: Recipe;
+}) {
   const router = useRouter();
+  const { items, add, remove } = useCart();
+  const inCart = items.some((r) => r.id === recipe.id);
 
   const handleDelete = async () => {
     const res = await fetch(`/api/recipes/${slug}`, { method: "DELETE" });
@@ -29,7 +40,16 @@ export function RecipeActions({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="flex gap-2 shrink-0">
+    <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+      <Button
+        variant={inCart ? "default" : "outline"}
+        size="sm"
+        onClick={() => (inCart ? remove(recipe.id) : add(recipe))}
+        className="gap-1.5"
+      >
+        <ShoppingCart className="h-3.5 w-3.5" />
+        {inCart ? "In list" : "Add to list"}
+      </Button>
       <Button variant="outline" size="sm" asChild>
         <a href={`/edit/${slug}`}>Edit</a>
       </Button>

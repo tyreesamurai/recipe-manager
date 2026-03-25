@@ -57,7 +57,7 @@ export default async function RecipePage({
           <h1 className="text-4xl font-bold tracking-tight leading-tight">
             {recipe.name}
           </h1>
-          <RecipeActions slug={slug} />
+          <RecipeActions slug={slug} recipe={recipe} />
         </div>
 
         {recipe.description && (
