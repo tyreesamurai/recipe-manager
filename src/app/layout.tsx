@@ -28,6 +28,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Recipes",
   description: "Your personal recipe collection",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Recipes",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
