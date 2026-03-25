@@ -3,6 +3,7 @@
 import { ChefHat, Menu } from "lucide-react";
 import Link from "next/link";
 import { CartButton } from "@/components/navbar/cart-button";
+import { ThemeToggle } from "@/components/navbar/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -24,9 +25,14 @@ export function NavBar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex h-16 items-center justify-between">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <ChefHat className="h-5 w-5" />
-          <span className="font-semibold text-lg tracking-tight">Recipes</span>
+        <Link href="/" className="flex items-center gap-2 shrink-0 group">
+          <ChefHat className="h-5 w-5 text-primary group-hover:rotate-[-8deg] transition-transform duration-300" />
+          <span
+            className="font-bold text-lg tracking-[-0.04em]"
+            style={{ fontFamily: "var(--font-display), Georgia, serif" }}
+          >
+            Recipes
+          </span>
         </Link>
 
         {/* Desktop nav links */}
@@ -38,15 +44,16 @@ export function NavBar() {
             <Link
               key={link.href}
               href={link.href}
-              className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        {/* Right side: cart + mobile hamburger */}
+        {/* Right side: theme toggle + cart + mobile hamburger */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <CartButton />
 
           {/* Mobile hamburger — hidden on md+ */}
@@ -74,7 +81,7 @@ export function NavBar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="flex items-center py-3 px-3 text-sm font-medium rounded-md hover:bg-muted transition-colors"
+                    className="flex items-center py-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] rounded-md hover:bg-muted transition-colors"
                   >
                     {link.label}
                   </Link>

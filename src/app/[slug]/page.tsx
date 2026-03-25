@@ -54,7 +54,7 @@ export default async function RecipePage({
         )}
 
         <div className="flex items-start justify-between gap-4 mb-3">
-          <h1 className="text-4xl font-bold tracking-tight leading-tight">
+          <h1 className="text-4xl sm:text-5xl font-bold leading-tight">
             {recipe.name}
           </h1>
           <RecipeActions slug={slug} recipe={recipe} />
@@ -97,7 +97,7 @@ export default async function RecipePage({
         )}
 
         {/* Meta row */}
-        <div className="flex flex-wrap gap-5 mt-5 text-sm text-muted-foreground">
+        <div className="flex flex-wrap gap-4 mt-6 text-sm text-muted-foreground border-t border-border/50 pt-5">
           {recipe.cookingTimes?.total && (
             <span className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" aria-hidden="true" />
@@ -165,10 +165,7 @@ export default async function RecipePage({
           className="lg:col-span-2"
           aria-labelledby="instructions-heading"
         >
-          <h2
-            id="instructions-heading"
-            className="text-2xl font-semibold tracking-tight mb-5"
-          >
+          <h2 id="instructions-heading" className="text-2xl font-bold mb-5">
             Instructions
           </h2>
 
@@ -178,7 +175,7 @@ export default async function RecipePage({
                 // biome-ignore lint/suspicious/noArrayIndexKey: instruction steps have no stable key
                 <li key={index} className="flex gap-4">
                   <span
-                    className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center mt-0.5"
+                    className="flex-shrink-0 w-7 h-7 rounded-sm bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mt-0.5 rotate-[2deg]"
                     aria-hidden="true"
                   >
                     {index + 1}
@@ -198,10 +195,7 @@ export default async function RecipePage({
         <aside className="space-y-8">
           {/* Ingredients */}
           <section aria-labelledby="ingredients-heading">
-            <h2
-              id="ingredients-heading"
-              className="text-2xl font-semibold tracking-tight mb-5"
-            >
+            <h2 id="ingredients-heading" className="text-2xl font-bold mb-5">
               Ingredients
             </h2>
 
