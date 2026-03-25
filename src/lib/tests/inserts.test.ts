@@ -55,6 +55,8 @@ function makeTxInsertChain() {
 const mockTx = {
   insert: () => makeTxInsertChain(),
   delete: () => ({ where: () => Promise.resolve() }),
+  // Similarity check for dedup — return no rows so the normal insert path runs
+  execute: () => Promise.resolve({ rows: [] }),
 };
 
 mock.module("@/db/index", () => ({
