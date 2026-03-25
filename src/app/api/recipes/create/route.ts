@@ -1,9 +1,9 @@
 import { api } from "@/lib/api";
 
 export async function POST(request: Request) {
-  const { recipe, ingredients } = await request.json();
+  const { recipe, ingredients, tags } = await request.json();
 
-  const result = await api.recipes.upsert({ recipe, ingredients });
+  const result = await api.recipes.upsert({ recipe, ingredients, tags });
 
   if (!result.ok) {
     return Response.json(

@@ -7,6 +7,7 @@ export function filtersFromSearchParams(params: SearchParams): RecipeFilters {
     maxCalories: helpers.parseOptionalInt(params.maxCalories),
     name: helpers.parseOptionalString(params.name),
     tags: helpers.parseStringArray(params.tags),
+    ingredients: helpers.parseStringArray(params.ingredients),
   };
 }
 
@@ -22,6 +23,10 @@ export function buildRecipeFilterQuery(data: RecipeFilters): string {
   if (data.tags && data.tags.length !== 0)
     for (const tag of data.tags) {
       params.append("tags", tag);
+    }
+  if (data.ingredients && data.ingredients.length !== 0)
+    for (const ing of data.ingredients) {
+      params.append("ingredients", ing);
     }
 
   return params.toString();

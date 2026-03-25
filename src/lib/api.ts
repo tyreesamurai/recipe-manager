@@ -1,5 +1,5 @@
 import type { SQL } from "drizzle-orm";
-import { and, eq, inArray, lte, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray, lte, sql } from "drizzle-orm";
 import { db } from "@/db/index";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -13,7 +13,11 @@ const queryRecipes = async (
 ): Promise<Result<Recipe[]>> => {
   const normalizedName = filters.name?.trim();
   const tagList = (filters.tags ?? []).map((t) => t.trim()).filter(Boolean);
+  const ingredientList = (filters.ingredients ?? [])
+    .map((i) => i.trim())
+    .filter(Boolean);
   const hasTags = tagList.length > 0;
+  const hasIngredients = ingredientList.length > 0;
 
   const totalTimeExpr = sql<number>`(${schema.recipes.cookingTimes}->>'total')::int`;
   const caloriesExpr = sql<number>`(${schema.recipes.nutrition}->>'calories')::int`;
@@ -32,10 +36,12 @@ const queryRecipes = async (
     conditions.push(lte(caloriesExpr, filters.maxCalories));
   }
 
-  try {
-    const base = db.select().from(schema.recipes);
+  const recipeColumns = getTableColumns(schema.recipes);
 
-    const query = hasTags
+  try {
+    const base = db.select(recipeColumns).from(schema.recipes);
+
+    let query = hasTags
       ? base
           .innerJoin(
             schema.recipeTags,
@@ -47,6 +53,51 @@ const queryRecipes = async (
       : conditions.length
         ? base.where(and(...conditions))
         : base;
+
+    if (hasIngredients) {
+      const matchingRecipeIds = await db
+        .selectDistinct({ recipeId: schema.recipeIngredients.recipeId })
+        .from(schema.recipeIngredients)
+        .innerJoin(
+          schema.ingredients,
+          eq(schema.ingredients.id, schema.recipeIngredients.ingredientId),
+        )
+        .where(inArray(schema.ingredients.name, ingredientList))
+        .groupBy(schema.recipeIngredients.recipeId)
+        .having(
+          sql`count(distinct ${schema.ingredients.name}) = ${ingredientList.length}`,
+        );
+
+      const ids = matchingRecipeIds
+        .map((r) => r.recipeId)
+        .filter((id): id is number => id != null);
+
+      if (ids.length === 0) return { ok: true, data: [] };
+
+      query = hasTags
+        ? (db
+            .select(recipeColumns)
+            .from(schema.recipes)
+            .innerJoin(
+              schema.recipeTags,
+              eq(schema.recipeTags.recipeId, schema.recipes.id),
+            )
+            .innerJoin(schema.tags, eq(schema.tags.id, schema.recipeTags.tagId))
+            .where(
+              and(
+                ...conditions,
+                inArray(schema.tags.name, tagList),
+                inArray(schema.recipes.id, ids),
+              ),
+            )
+            .groupBy(schema.recipes.id) as typeof query)
+        : (db
+            .select(recipeColumns)
+            .from(schema.recipes)
+            .where(
+              and(...conditions, inArray(schema.recipes.id, ids)),
+            ) as typeof query);
+    }
 
     const recipes = await query;
 
@@ -99,5 +150,11 @@ export const api = {
   },
   recipeIngredients: {
     insert: inserter.insertRecipeIngredient,
+  },
+  tags: {
+    getAll: fetcher.fetchAllTags,
+    getForRecipe: fetcher.getTagsForRecipe,
+    getForRecipes: fetcher.getTagsForRecipes,
+    upsert: inserter.upsertTag,
   },
 };

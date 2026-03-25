@@ -23,10 +23,12 @@ export default async function EditRecipePage({
   }
 
   const recipe = recipeResult.data;
-  const ingredientsResult = recipe.id
-    ? await api.recipes.getIngredients(recipe.id)
-    : null;
+  const [ingredientsResult, tagsResult] = await Promise.all([
+    recipe.id ? api.recipes.getIngredients(recipe.id) : Promise.resolve(null),
+    recipe.id ? api.tags.getForRecipe(recipe.id) : Promise.resolve(null),
+  ]);
   const ingredients = ingredientsResult?.ok ? ingredientsResult.data : [];
+  const tags = tagsResult?.ok ? tagsResult.data : [];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -34,7 +36,7 @@ export default async function EditRecipePage({
       <p className="text-muted-foreground mb-8">
         Update your recipe details below.
       </p>
-      <CreateRecipeForm recipe={recipe} ingredients={ingredients} />
+      <CreateRecipeForm recipe={recipe} ingredients={ingredients} tags={tags} />
     </div>
   );
 }

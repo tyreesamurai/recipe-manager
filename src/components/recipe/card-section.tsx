@@ -32,10 +32,21 @@ export async function RecipeCardSection({
     );
   }
 
+  const recipeIds = recipesResult.data
+    .map((r) => r.id)
+    .filter((id): id is number => id != null);
+
+  const tagsResult = await api.tags.getForRecipes(recipeIds);
+  const tagsMap = tagsResult.ok ? tagsResult.data : new Map();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
       {recipesResult.data.map((recipe) => (
-        <RecipeCard key={recipe.id} recipe={recipe} />
+        <RecipeCard
+          key={recipe.id}
+          recipe={recipe}
+          tags={recipe.id != null ? tagsMap.get(recipe.id) : undefined}
+        />
       ))}
     </div>
   );

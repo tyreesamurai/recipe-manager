@@ -1,6 +1,7 @@
 import { Clock, Flame } from "lucide-react";
 import Link from "next/link";
 import { RecipeCheckbox } from "@/components/recipe/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -8,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Recipe } from "@/lib/types";
+import type { Recipe, Tag } from "@/lib/types";
 
-export function RecipeCard({ recipe }: { recipe: Recipe }) {
+export function RecipeCard({ recipe, tags }: { recipe: Recipe; tags?: Tag[] }) {
   const href = recipe.name.includes("-")
     ? `/${recipe.id}`
     : `/${recipe.name.replaceAll(" ", "-")}`;
@@ -36,8 +37,8 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
         )}
       </CardHeader>
 
-      {(recipe.cookingTimes?.total || recipe.nutrition?.calories) && (
-        <CardContent className="pt-0 mt-auto">
+      <CardContent className="pt-0 mt-auto space-y-2">
+        {(recipe.cookingTimes?.total || recipe.nutrition?.calories) && (
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             {recipe.cookingTimes?.total && (
               <span className="flex items-center gap-1">
@@ -52,8 +53,21 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
               </span>
             )}
           </div>
-        </CardContent>
-      )}
+        )}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag) => (
+              <Badge
+                key={tag.id}
+                variant="outline"
+                className="text-[10px] px-1.5 py-0"
+              >
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -13,16 +14,25 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { IngredientCombobox } from "@/components/ui/ingredient-combobox";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TagCombobox } from "@/components/ui/tag-combobox";
 import { Textarea } from "@/components/ui/textarea";
-import { type Ingredient, type Recipe, recipeSchema } from "@/lib/types";
+import {
+  type Ingredient,
+  type Recipe,
+  recipeSchema,
+  type Tag,
+} from "@/lib/types";
 
 const formSchema = recipeSchema.extend({
   description: z.string().optional(),
   instructions: z.array(z.object({ text: z.string() })),
   inputUrl: z.string().optional(),
   imageUrl: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  servings: z.number().int().nonnegative().optional(),
   nutrition: z
     .object({
       calories: z.number().nonnegative(),
@@ -53,8 +63,27 @@ const formSchema = recipeSchema.extend({
 export function CreateRecipeForm(props: {
   recipe?: Recipe;
   ingredients?: Ingredient[];
+  tags?: Tag[];
 }) {
   const router = useRouter();
+  const [allTags, setAllTags] = useState<
+    Array<{ label: string; value: string }>
+  >([]);
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
+
+  useEffect(() => {
+    fetch("/api/tags")
+      .then((r) => r.json())
+      .then((d) =>
+        setAllTags(
+          (d.tags ?? []).map((t: Tag) => ({ label: t.name, value: t.name })),
+        ),
+      );
+    fetch("/api/ingredients")
+      .then((r) => r.json())
+      .then((d) => setAllIngredients(d.ingredients ?? []));
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,6 +92,8 @@ export function CreateRecipeForm(props: {
       instructions: props.recipe?.instructions?.map((instruction) => ({
         text: instruction,
       })) ?? [{ text: "" }],
+      tags: props.tags?.map((t) => t.name) ?? [],
+      servings: props.recipe?.servings ?? undefined,
       nutrition: props.recipe?.nutrition ?? {
         calories: 0,
         protein: 0,
@@ -118,6 +149,10 @@ export function CreateRecipeForm(props: {
       }))
       .filter((i) => i.name.length > 0);
 
+    const tags = (data.tags ?? [])
+      .map((name) => ({ name: name.trim() }))
+      .filter((t) => t.name.length > 0);
+
     const recipePayload: Recipe = {
       name: data.name.trim(),
       ...(data.description?.trim() && { description: data.description.trim() }),
@@ -126,11 +161,13 @@ export function CreateRecipeForm(props: {
       ...(data.cookingTimes?.total ? { cookingTimes: data.cookingTimes } : {}),
       ...(data.inputUrl?.trim() && { inputUrl: data.inputUrl.trim() }),
       ...(data.imageUrl?.trim() && { imageUrl: data.imageUrl.trim() }),
+      ...(data.servings != null && { servings: data.servings }),
     };
 
     const payload = {
       recipe: recipePayload,
       ...(ingredients.length > 0 && { ingredients }),
+      ...(tags.length > 0 && { tags }),
     };
 
     fetch("/api/recipes/create", {
@@ -215,6 +252,22 @@ export function CreateRecipeForm(props: {
                 </Field>
               )}
             />
+
+            <Controller
+              name="tags"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Tags</FieldLabel>
+                  <TagCombobox
+                    options={allTags}
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    placeholder="Add tags…"
+                  />
+                </Field>
+              )}
+            />
           </FieldGroup>
         </TabsContent>
 
@@ -229,7 +282,7 @@ export function CreateRecipeForm(props: {
           <div className="space-y-3">
             {instructionFields.map((item, index) => (
               <div key={item.id} className="flex gap-3 items-start">
-                <span className="mt-8 flex-shrink-0 w-7 h-7 rounded-full bg-muted text-muted-foreground text-xs font-semibold flex items-center justify-center">
+                <span className="mt-8 shrink-0 w-7 h-7 rounded-full bg-muted text-muted-foreground text-xs font-semibold flex items-center justify-center">
                   {index + 1}
                 </span>
 
@@ -292,7 +345,6 @@ export function CreateRecipeForm(props: {
           </div>
 
           <div className="space-y-3">
-            {/* Column headers */}
             <div className="grid grid-cols-[1fr_100px_100px_36px] gap-2 px-1">
               <span className="text-xs font-medium text-muted-foreground">
                 Ingredient
@@ -322,9 +374,10 @@ export function CreateRecipeForm(props: {
                       >
                         Ingredient name
                       </FieldLabel>
-                      <Input
-                        {...field}
-                        id={`ingredients.${index}.name`}
+                      <IngredientCombobox
+                        options={allIngredients}
+                        value={field.value}
+                        onChange={field.onChange}
                         placeholder="e.g. flour"
                       />
                       {fieldState.invalid && (
@@ -351,7 +404,12 @@ export function CreateRecipeForm(props: {
                         type="number"
                         min={0}
                         placeholder="0"
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        value={field.value || ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? 0 : e.target.valueAsNumber,
+                          )
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -442,7 +500,12 @@ export function CreateRecipeForm(props: {
                         id={name}
                         type="number"
                         min={0}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        value={field.value || ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? 0 : e.target.valueAsNumber,
+                          )
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -482,7 +545,12 @@ export function CreateRecipeForm(props: {
                         id={name}
                         type="number"
                         min={0}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        value={field.value || ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? 0 : e.target.valueAsNumber,
+                          )
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -492,6 +560,42 @@ export function CreateRecipeForm(props: {
                 />
               ))}
             </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Servings</h2>
+              <p className="text-sm text-muted-foreground">
+                Optional — how many people this recipe serves.
+              </p>
+            </div>
+            <Controller
+              name="servings"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="max-w-35">
+                  <FieldLabel htmlFor="servings">Servings</FieldLabel>
+                  <Input
+                    {...field}
+                    id="servings"
+                    type="number"
+                    min={1}
+                    placeholder="e.g. 4"
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === ""
+                          ? undefined
+                          : e.target.valueAsNumber,
+                      )
+                    }
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </div>
 
           <div className="space-y-4">

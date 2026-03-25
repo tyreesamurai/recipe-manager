@@ -27,6 +27,7 @@ export const recipes = pgTable("recipes", {
     cool?: number;
     total: number;
   }>(),
+  servings: integer(),
   imageUrl: varchar("image_url", { length: 255 }),
   inputUrl: varchar("input_url", { length: 255 }),
 });

@@ -1,9 +1,11 @@
-import { Clock, Flame, Timer, UtensilsCrossed } from "lucide-react";
+import { Clock, Flame, Timer, Users, UtensilsCrossed } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { RecipeActions } from "./recipe-actions";
+import { RecipeImage } from "./recipe-image";
 
 export default async function RecipePage({
   params,
@@ -36,13 +38,21 @@ export default async function RecipePage({
     throw error;
   }
 
-  const ingredientsResult = await api.recipes.getIngredients(recipe.id);
+  const [ingredientsResult, tagsResult] = await Promise.all([
+    api.recipes.getIngredients(recipe.id),
+    api.tags.getForRecipe(recipe.id),
+  ]);
   const ingredients = ingredientsResult.ok ? ingredientsResult.data : [];
+  const tags = tagsResult.ok ? tagsResult.data : [];
 
   return (
     <article className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
       {/* Hero */}
       <header className="mb-8">
+        {recipe.imageUrl && (
+          <RecipeImage src={recipe.imageUrl} alt={recipe.name} />
+        )}
+
         <div className="flex items-start justify-between gap-4 mb-3">
           <h1 className="text-4xl font-bold tracking-tight leading-tight">
             {recipe.name}
@@ -54,6 +64,36 @@ export default async function RecipePage({
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
             {recipe.description}
           </p>
+        )}
+
+        {recipe.inputUrl && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Adapted from{" "}
+            <a
+              href={recipe.inputUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-foreground transition-colors"
+            >
+              {(() => {
+                try {
+                  return new URL(recipe.inputUrl).hostname;
+                } catch {
+                  return recipe.inputUrl;
+                }
+              })()}
+            </a>
+          </p>
+        )}
+
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {tags.map((tag) => (
+              <Badge key={tag.id} variant="secondary">
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
         )}
 
         {/* Meta row */}
@@ -99,6 +139,17 @@ export default async function RecipePage({
                   {recipe.nutrition.calories}
                 </strong>{" "}
                 cal
+              </span>
+            </span>
+          )}
+          {recipe.servings && (
+            <span className="flex items-center gap-1.5">
+              <Users className="h-4 w-4" aria-hidden="true" />
+              <span>
+                <strong className="text-foreground font-medium">
+                  {recipe.servings}
+                </strong>{" "}
+                servings
               </span>
             </span>
           )}

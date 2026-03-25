@@ -3,8 +3,8 @@ import { z } from "zod";
 import { db } from "@/db/index";
 import * as schema from "@/db/schema";
 import { AppError } from "@/lib/errors";
-import type { Ingredient, Recipe, Result } from "@/lib/types";
-import { ingredientSchema, recipeSchema } from "@/lib/types";
+import type { Ingredient, Recipe, Result, Tag } from "@/lib/types";
+import { ingredientSchema, recipeSchema, tagsSchema } from "@/lib/types";
 
 export const fetchAllRecipes = async (): Promise<Result<Recipe[]>> => {
   try {
@@ -281,6 +281,116 @@ export const getIngredients = async (
         code: "INTERNAL",
         status: 500,
         message: "Failed database query",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const fetchAllTags = async (): Promise<Result<Tag[]>> => {
+  try {
+    const rows = await db.select().from(schema.tags);
+    const parsed = tagsSchema.safeParse(rows);
+
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to read tags from database",
+          meta: { issues: parsed.error.issues },
+          cause: parsed.error,
+        }),
+      };
+    }
+
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getTagsForRecipe = async (
+  recipeId: number,
+): Promise<Result<Tag[]>> => {
+  try {
+    const rows = await db
+      .select({ id: schema.tags.id, name: schema.tags.name })
+      .from(schema.recipeTags)
+      .innerJoin(schema.tags, eq(schema.tags.id, schema.recipeTags.tagId))
+      .where(eq(schema.recipeTags.recipeId, recipeId));
+
+    const parsed = tagsSchema.safeParse(rows);
+
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: new AppError({
+          code: "INTERNAL",
+          status: 500,
+          message: "Failed to read tags from database",
+          meta: { issues: parsed.error.issues },
+          cause: parsed.error,
+        }),
+      };
+    }
+
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
+        cause: err,
+      }),
+    };
+  }
+};
+
+export const getTagsForRecipes = async (
+  recipeIds: number[],
+): Promise<Result<Map<number, Tag[]>>> => {
+  const uniqueIds = [...new Set(recipeIds)].filter((n) => Number.isFinite(n));
+
+  if (uniqueIds.length === 0) return { ok: true, data: new Map() };
+
+  try {
+    const rows = await db
+      .select({
+        recipeId: schema.recipeTags.recipeId,
+        id: schema.tags.id,
+        name: schema.tags.name,
+      })
+      .from(schema.recipeTags)
+      .innerJoin(schema.tags, eq(schema.tags.id, schema.recipeTags.tagId))
+      .where(inArray(schema.recipeTags.recipeId, uniqueIds));
+
+    const map = new Map<number, Tag[]>();
+    for (const row of rows) {
+      if (row.recipeId == null) continue;
+      const existing = map.get(row.recipeId) ?? [];
+      map.set(row.recipeId, [...existing, { id: row.id, name: row.name }]);
+    }
+
+    return { ok: true, data: map };
+  } catch (err) {
+    return {
+      ok: false,
+      error: new AppError({
+        code: "INTERNAL",
+        status: 500,
+        message: "Database query failed",
         cause: err,
       }),
     };
