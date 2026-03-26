@@ -17,47 +17,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import {
+  addDays,
+  formatShort,
+  formatWeekRange,
+  getWeekStart,
+  toISODate,
+} from "@/lib/date-utils";
 import type { MealPlanEntry, MealSlot, Recipe } from "@/lib/types";
 import { MEAL_SLOTS } from "@/lib/types";
-
-// ── date helpers ──────────────────────────────────────────────────────────────
-
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const dow = d.getDay(); // 0=Sun
-  const diff = dow === 0 ? -6 : 1 - dow; // shift to Monday
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function toISODate(date: Date): string {
-  return date.toISOString().split("T")[0];
-}
-
-function addDays(date: Date, n: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + n);
-  return d;
-}
-
-function formatShort(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function formatWeekRange(weekStart: Date): string {
-  const end = addDays(weekStart, 6);
-  const s = weekStart.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-  });
-  const e = end.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-  return `${s} – ${e}`;
-}
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 

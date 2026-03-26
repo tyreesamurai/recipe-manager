@@ -37,7 +37,10 @@ function makeSelectChain() {
 }
 
 mock.module("@/db/index", () => ({
-  db: { select: () => makeSelectChain() },
+  db: {
+    select: () => makeSelectChain(),
+    selectDistinct: () => makeSelectChain(),
+  },
 }));
 
 // Import the module under test AFTER mock.module so Bun's hoisting puts the
@@ -52,6 +55,8 @@ const {
   fetchIngredientByName,
   getIngredients,
   getIngredientsForRecipes,
+  getMealPlanEntries,
+  getSelectedRecipesFromPlanner,
 } = await import("../fetches");
 
 // ---------------------------------------------------------------------------
@@ -343,6 +348,110 @@ describe("getIngredientsForRecipes", () => {
   test("returns err when the db throws", async () => {
     throwDb();
     const result = await getIngredientsForRecipes([1]);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("INTERNAL");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getMealPlanEntries
+// ---------------------------------------------------------------------------
+
+const validMealPlanRow = {
+  id: 1,
+  weekStart: "2025-06-02",
+  day: 0,
+  mealSlot: "dinner",
+  recipeId: 42,
+  recipe: { id: 42, name: "Pasta", nutrition: null },
+};
+
+describe("getMealPlanEntries", () => {
+  beforeEach(() => resetDb());
+
+  test("returns ok with a list of entries for the given week", async () => {
+    resetDb([validMealPlanRow]);
+    const result = await getMealPlanEntries("2025-06-02");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].weekStart).toBe("2025-06-02");
+    expect(result.data[0].mealSlot).toBe("dinner");
+    expect(result.data[0].recipe?.name).toBe("Pasta");
+  });
+
+  test("returns ok with an empty array when no entries exist for the week", async () => {
+    resetDb([]);
+    const result = await getMealPlanEntries("2025-06-02");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toEqual([]);
+  });
+
+  test("returns err when a row fails schema validation", async () => {
+    resetDb([{ id: 1, weekStart: "2025-06-02" }]); // missing required fields
+    const result = await getMealPlanEntries("2025-06-02");
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("INTERNAL");
+  });
+
+  test("returns err when the db throws", async () => {
+    throwDb();
+    const result = await getMealPlanEntries("2025-06-02");
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("INTERNAL");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getSelectedRecipesFromPlanner
+// ---------------------------------------------------------------------------
+
+const validRecipeForPlanner = {
+  id: 5,
+  name: "Tacos",
+  description: null,
+  instructions: null,
+  nutrition: null,
+  cookingTimes: null,
+  servings: null,
+  image_url: null,
+  input_url: null,
+};
+
+describe("getSelectedRecipesFromPlanner", () => {
+  beforeEach(() => resetDb());
+
+  test("returns ok with recipes that are on or after today", async () => {
+    resetDb([validRecipeForPlanner]);
+    const result = await getSelectedRecipesFromPlanner("2025-06-04");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].name).toBe("Tacos");
+  });
+
+  test("returns ok with an empty array when no future entries exist", async () => {
+    resetDb([]);
+    const result = await getSelectedRecipesFromPlanner("2025-06-04");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data).toEqual([]);
+  });
+
+  test("accepts any valid YYYY-MM-DD date string as today", async () => {
+    resetDb([validRecipeForPlanner]);
+    // Late-evening local date that would be wrong if UTC were used
+    const result = await getSelectedRecipesFromPlanner("2025-06-03");
+    expect(result.ok).toBe(true);
+  });
+
+  test("returns err when the db throws", async () => {
+    throwDb();
+    const result = await getSelectedRecipesFromPlanner("2025-06-04");
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.code).toBe("INTERNAL");

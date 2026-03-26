@@ -615,9 +615,12 @@ export const getMealPlanEntries = async (
   }
 };
 
-export const getSelectedRecipesFromPlanner = async (): Promise<
-  Result<Recipe[]>
-> => {
+export const getSelectedRecipesFromPlanner = async (
+  // Caller passes today's local date (YYYY-MM-DD) so we never rely on
+  // CURRENT_DATE (DB/server UTC) which would flip the day 4–5 hours early
+  // for users in EST/EDT.
+  today: string,
+): Promise<Result<Recipe[]>> => {
   try {
     const rows = await db
       .selectDistinct(getTableColumns(schema.recipes))
@@ -627,7 +630,7 @@ export const getSelectedRecipesFromPlanner = async (): Promise<
         eq(schema.recipes.id, schema.mealPlanEntries.recipeId),
       )
       .where(
-        sql`(${schema.mealPlanEntries.weekStart}::date + ${schema.mealPlanEntries.day} * interval '1 day') >= CURRENT_DATE`,
+        sql`(${schema.mealPlanEntries.weekStart}::date + ${schema.mealPlanEntries.day} * interval '1 day') >= ${today}::date`,
       );
 
     const parsed = z.array(recipeSchema).safeParse(rows);
