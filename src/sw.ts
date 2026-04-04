@@ -1,6 +1,6 @@
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist } from "serwist";
+import { NetworkOnly, Serwist } from "serwist";
 
 // @ts-expect-error — ServiceWorkerGlobalScope is defined in the service worker context
 declare const self: ServiceWorkerGlobalScope &
@@ -13,7 +13,17 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [
+    // API routes must never be cached — always go straight to the network.
+    // defaultCache applies NetworkFirst with a 10s timeout and 24h cache to
+    // all /api/* GET requests, which causes stale or empty cached responses
+    // to be served when the timeout fires. NetworkOnly bypasses this entirely.
+    {
+      matcher: ({ url }) => url.pathname.startsWith("/api/"),
+      handler: new NetworkOnly(),
+    },
+    ...defaultCache,
+  ],
 });
 
 serwist.addEventListeners();

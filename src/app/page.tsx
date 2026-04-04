@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { RecipeCardSection } from "@/components/recipe/card-section";
+import { RecipeCardSkeleton } from "@/components/recipe/card-skeleton";
 import {
   MobileFilterSheet,
   RecipeFilterSection,
@@ -48,7 +49,11 @@ export default async function Home({
 
           <Suspense
             fallback={
-              <p className="text-muted-foreground text-sm">Loading recipes…</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {["a", "b", "c", "d", "e", "f"].map((k) => (
+                  <RecipeCardSkeleton key={k} />
+                ))}
+              </div>
             }
           >
             <RecipeCardSection searchParams={searchParams} />
