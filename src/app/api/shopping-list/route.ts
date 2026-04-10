@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { api } from "@/lib/api";
 import type { Recipe } from "@/lib/types";
 
-// Local YYYY-MM-DD using Node.js process timezone — avoids UTC flip.
 function localISODate(): string {
   const d = new Date();
   const y = d.getFullYear();
@@ -11,7 +10,6 @@ function localISODate(): string {
   return `${y}-${m}-${day}`;
 }
 
-// Combined GET: returns selected recipes (manual + planner), derived ingredients, extras, checked names
 export async function GET() {
   const [selectedResult, plannerResult, extrasResult, checksResult] =
     await Promise.all([
@@ -40,7 +38,6 @@ export async function GET() {
     );
   }
 
-  // Union manual selections + planner (deduped by id)
   const plannerRecipes: Recipe[] = plannerResult.ok ? plannerResult.data : [];
   const allSelected = [...selectedResult.data];
   for (const r of plannerRecipes) {
