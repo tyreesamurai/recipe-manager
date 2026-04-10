@@ -23,4 +23,4 @@ COPY --from=builder /app/bun.lock* ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next/
 
-CMD ["bun", "run", "start", "-p", "8000"]
+CMD ["bun", "run", "start", "-p", "8001"]
