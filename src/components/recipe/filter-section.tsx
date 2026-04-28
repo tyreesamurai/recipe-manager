@@ -30,9 +30,11 @@ export function MobileFilterSheet() {
           Filters
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-80">
-        <SheetTitle>Filter Recipes</SheetTitle>
-        <div className="mt-6">
+      <SheetContent side="left" className="flex flex-col gap-0 px-6">
+        <div className="pt-6 pb-4 pl-2 border-b">
+          <SheetTitle className="text-lg">Filter Recipes</SheetTitle>
+        </div>
+        <div className="flex-1 overflow-y-auto py-4">
           <FilterForm />
         </div>
       </SheetContent>

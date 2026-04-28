@@ -40,7 +40,7 @@ export function RecipeActions({
   };
 
   return (
-    <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+    <div className="flex flex-col sm:flex-row gap-2 shrink-0">
       <Button
         variant={inCart ? "default" : "outline"}
         size="sm"
