@@ -46,7 +46,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Dependency audit
-        run: bun audit
+        run: bun audit --level high
 
       - name: Semgrep scan
         uses: semgrep/semgrep-action@v1
