@@ -14,7 +14,6 @@ export default async function Home({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex gap-8 items-start">
-        {/* Desktop filter sidebar — hidden below md */}
         <aside className="hidden md:block w-64 shrink-0 sticky top-24">
           <Suspense
             fallback={
@@ -25,9 +24,7 @@ export default async function Home({
           </Suspense>
         </aside>
 
-        {/* Main content area */}
         <div className="flex-1 min-w-0">
-          {/* Mobile header row: page title + filter trigger */}
           <div className="flex items-center justify-between mb-6 md:hidden">
             <h1 className="text-2xl font-bold tracking-tight">Recipes</h1>
             <Suspense fallback={null}>
@@ -35,7 +32,6 @@ export default async function Home({
             </Suspense>
           </div>
 
-          {/* Shopping list hint */}
           <p className="text-xs text-muted-foreground mb-4">
             Check a recipe to add its ingredients to your{" "}
             <a
