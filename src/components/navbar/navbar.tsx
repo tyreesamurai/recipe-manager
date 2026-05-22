@@ -18,7 +18,6 @@ const links = [
   { href: "/import", label: "Import" },
   { href: "/shopping-list", label: "Shopping List" },
   { href: "/planner", label: "Planner" },
-  { href: "/management", label: "Management" },
 ];
 
 export function NavBar() {

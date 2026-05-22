@@ -123,5 +123,8 @@ jobs:
 
       - name: Deploy
         run: |
-          ssh -T -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "KUBECONFIG=/etc/rancher/k3s/k3s.yaml flux reconcile kustomization apps --with-source"
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            flux reconcile kustomization apps --with-source
+            kubectl rollout restart deployment/recipes -n juntos
+          EOF
