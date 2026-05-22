@@ -18,13 +18,13 @@ const links = [
   { href: "/import", label: "Import" },
   { href: "/shopping-list", label: "Shopping List" },
   { href: "/planner", label: "Planner" },
+  { href: "/management", label: "Management" },
 ];
 
 export function NavBar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex h-16 items-center justify-between">
-        {/* Brand */}
         <Link href="/" className="flex items-center gap-2 shrink-0 group">
           <ChefHat className="h-5 w-5 text-primary group-hover:rotate-[-8deg] transition-transform duration-300" />
           <span
@@ -35,7 +35,6 @@ export function NavBar() {
           </span>
         </Link>
 
-        {/* Desktop nav links */}
         <nav
           className="hidden md:flex items-center gap-1"
           aria-label="Main navigation"
@@ -51,12 +50,10 @@ export function NavBar() {
           ))}
         </nav>
 
-        {/* Right side: theme toggle + cart + mobile hamburger */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <CartButton />
 
-          {/* Mobile hamburger — hidden on md+ */}
           <Sheet>
             <SheetTrigger asChild>
               <Button

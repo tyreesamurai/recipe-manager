@@ -24,7 +24,6 @@ export function ComingSoon({ feature, description }: ComingSoonProps) {
       <p className="text-muted-foreground max-w-sm leading-relaxed">
         {description ?? "This feature is still being crafted. Check back soon."}
       </p>
-      <p>Slight little CI/CD test!</p>
     </div>
   );
 }
