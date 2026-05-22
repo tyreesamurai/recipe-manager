@@ -23,4 +23,4 @@ COPY --from=builder /app/bun.lock* ./
 RUN bun install --frozen-lockfile --production
 COPY --from=builder /app/.next ./.next/
 
-CMD ["/bin/sh", "-c", "bun run start --port ${PORT}"]
+CMD ["/bin/sh", "-c", "bun run start"]
