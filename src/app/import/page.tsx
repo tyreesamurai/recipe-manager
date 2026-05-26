@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ImportClient } from "@/components/import/import-client";
 
 export default function ImportPage() {

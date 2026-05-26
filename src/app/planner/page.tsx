@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { PlannerClient } from "@/components/planner/planner-client";
 
 export default function Planner() {

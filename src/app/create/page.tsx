@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { CreateRecipeForm } from "@/components/forms/create-recipe";
 
 export default async function CreatePage() {

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ChefHat, Package, Sparkles } from "lucide-react";
 import { KettleControl } from "@/components/kettle/kettle-control";
 

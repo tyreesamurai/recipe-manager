@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ShoppingListClient } from "@/components/shopping-list/shopping-list-client";
 
 export default function ShoppingList() {
