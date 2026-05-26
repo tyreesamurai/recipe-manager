@@ -37,6 +37,7 @@ export function KettleControl() {
     setPowerStatus("loading");
     const ok = await kettleAction({ action: on ? "on" : "off" });
     setPowerStatus(ok ? "ok" : "error");
+    if (ok) setActiveMode(null);
     setTimeout(() => setPowerStatus("idle"), 2500);
   };
 
