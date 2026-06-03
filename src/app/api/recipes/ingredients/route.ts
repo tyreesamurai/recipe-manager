@@ -1,6 +1,10 @@
 import { api } from "@/lib/api";
+import { withAuth } from "@/lib/route-auth";
 
 export async function POST(request: Request) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   const { ids } = await request.json();
 
   if (!ids) {
@@ -8,8 +12,6 @@ export async function POST(request: Request) {
   }
 
   const result = await api.recipes.getIngredientsForRecipes(ids);
-
-  console.log(result);
 
   if (!result.ok) {
     return Response.json(

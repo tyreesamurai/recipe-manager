@@ -1,7 +1,11 @@
 import { AppError } from "@/lib/errors";
 import { kettle } from "@/lib/kettle";
+import { withAuth } from "@/lib/route-auth";
 
 export async function POST(request: Request) {
+  const deny = await withAuth(request, "admin");
+  if (deny) return deny;
+
   let body: Record<string, unknown>;
 
   try {

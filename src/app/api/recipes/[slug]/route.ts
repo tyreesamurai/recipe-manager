@@ -1,9 +1,13 @@
 import { api } from "@/lib/api";
+import { withAuth } from "@/lib/route-auth";
 
 export async function DELETE(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   const { slug } = await params;
 
   const recipeResult = await api.recipes.get(slug.replaceAll("-", " "));
@@ -30,9 +34,12 @@ export async function DELETE(
 }
 
 export async function GET(
-  _req: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   const { slug } = await params;
 
   const recipe = await api.recipes.get(slug);

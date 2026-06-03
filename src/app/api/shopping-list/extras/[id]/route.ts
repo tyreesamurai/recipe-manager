@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { api } from "@/lib/api";
+import { withAuth } from "@/lib/route-auth";
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   const { id } = await params;
   const numId = Number(id);
   if (Number.isNaN(numId)) {

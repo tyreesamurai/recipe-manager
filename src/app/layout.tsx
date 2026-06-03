@@ -1,7 +1,9 @@
 import { Fraunces, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { cookies } from "next/headers";
 import { NavBar } from "@/components/navbar/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/contexts/providers";
+import { verifySession } from "@/lib/auth";
 import "./globals.css";
 import type { Metadata } from "next";
 
@@ -38,11 +40,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Read session server-side so the NavBar knows which links to show
+  const cookieStore = await cookies();
+  const token = cookieStore.get("__Host-session")?.value;
+  let role: "admin" | "user" | null = null;
+  if (token) {
+    try {
+      const session = await verifySession(token);
+      role = session?.role ?? null;
+    } catch {
+      // malformed token or missing SESSION_SECRET — treat as unauthenticated
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -51,7 +66,7 @@ export default function RootLayout({
       >
         <Providers>
           <div className="flex flex-col min-h-screen">
-            <NavBar />
+            <NavBar role={role} />
             <main className="flex-1">{children}</main>
           </div>
           <Toaster />

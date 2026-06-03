@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { api } from "@/lib/api";
+import { withAuth } from "@/lib/route-auth";
 import type { Recipe } from "@/lib/types";
 
 function localISODate(): string {
@@ -10,7 +11,10 @@ function localISODate(): string {
   return `${y}-${m}-${day}`;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   const [selectedResult, plannerResult, extrasResult, checksResult] =
     await Promise.all([
       api.shoppingList.getSelected(),

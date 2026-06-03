@@ -1,7 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { ChefHat, Package, Sparkles } from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { KettleControl } from "@/components/kettle/kettle-control";
+import { verifySession } from "@/lib/auth";
 
 interface ComingTileProps {
   icon: React.ReactNode;
@@ -28,7 +31,17 @@ function ComingTile({ icon, title, description }: ComingTileProps) {
   );
 }
 
-export default function Management() {
+export default async function Management() {
+  // Server-side admin guard (middleware already blocks non-admins;
+  // this is a second layer of defence)
+  const cookieStore = await cookies();
+  const token = cookieStore.get("__Host-session")?.value;
+  const session = token ? await verifySession(token) : null;
+
+  if (!session || session.role !== "admin" || session.status !== "approved") {
+    redirect("/");
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-8">

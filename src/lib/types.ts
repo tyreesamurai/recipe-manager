@@ -137,6 +137,9 @@ export const resultEventSchema = {
   recipeIngredients: z.array(recipeIngredientSchema).optional(),
 };
 
+// Re-exported from session.ts so the middleware import chain stays Edge-compatible
+export { sessionSchema } from "@/lib/session";
+
 export type ResultEvent = z.infer<typeof resultEventSchema>;
 
 type DatabaseType = typeof db;
@@ -162,3 +165,5 @@ export type RecipeWithIngredients = z.infer<typeof recipeWithIngredientsSchema>;
 export type RecipeWithIngredientsAndTags = RecipeWithIngredients & {
   tags?: Tag[];
 };
+
+export type { Session } from "@/lib/session";

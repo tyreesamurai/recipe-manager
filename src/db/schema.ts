@@ -2,13 +2,25 @@ import {
   date,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   primaryKey,
   real,
   text,
+  timestamp,
   unique,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+
+export const rolesEnum = pgEnum("roles", ["admin", "user"]);
+
+export const statusEnum = pgEnum("status", [
+  "pending",
+  "approved",
+  "denied",
+  "expired",
+]);
 
 export const recipes = pgTable("recipes", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -113,3 +125,25 @@ export const mealPlanEntries = pgTable(
     unique().on(table.weekStart, table.day, table.mealSlot, table.recipeId),
   ],
 );
+
+export const users = pgTable("users", {
+  id: uuid().primaryKey().defaultRandom().notNull(),
+  name: varchar({ length: 255 }).notNull(),
+  email: varchar({ length: 255 }),
+  role: rolesEnum(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const sessions = pgTable("sessions", {
+  id: uuid().primaryKey().defaultRandom().notNull(),
+  userId: uuid("user_id").references(() => users.id),
+  status: statusEnum().default("pending"),
+  requesterName: varchar("requester_name", { length: 255 }),
+  requesterEmail: varchar("requester_email", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 16 }),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+  approvedBy: uuid("approved_by").references(() => users.id),
+});

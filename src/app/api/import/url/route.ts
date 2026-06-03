@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { parseRecipeFromHtml } from "@/lib/import-recipe";
+import { withAuth } from "@/lib/route-auth";
 
 export async function POST(request: Request) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   let url: string;
   try {
     const body = await request.json();

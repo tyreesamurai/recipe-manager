@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { api } from "@/lib/api";
+import { withAuth } from "@/lib/route-auth";
 
 export async function POST(request: Request) {
+  const deny = await withAuth(request);
+  if (deny) return deny;
+
   const { name, checked } = await request.json();
   if (!name || typeof name !== "string") {
     return NextResponse.json({ error: "name required" }, { status: 400 });
