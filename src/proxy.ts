@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth";
-import { extractClientIp, isLocalIp, isTailscaleIp } from "@/lib/ip";
+import { signSession, verifySession } from "@/lib/auth";
 
 // Routes that require admin role to access
 const ADMIN_ONLY_PATHS = ["/management", "/admin"];
@@ -15,9 +14,6 @@ function isAdminOnly(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  const ip = extractClientIp(request) ?? "";
-  const isTrustedIp = isLocalIp(ip) || isTailscaleIp(ip);
-
   // Safely verify the session — never throw from middleware
   let session = null;
   const token = request.cookies.get("__Host-session")?.value;
@@ -29,19 +25,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // ── Trusted IP (local network / Tailscale) ──────────────────────────────
-  if (isTrustedIp) {
-    // Already holding a valid admin session — let them through
-    if (session?.status === "approved" && session.role === "admin") {
-      return NextResponse.next();
-    }
-    // No valid admin session — auto-issue one and redirect back
-    const autoUrl = new URL("/api/auth/auto", request.url);
-    autoUrl.searchParams.set("redirect", pathname + search);
-    return NextResponse.redirect(autoUrl);
-  }
-
-  // ── Public traffic ───────────────────────────────────────────────────────
+  // ── Unauthenticated ──────────────────────────────────────────────────────
   if (!session) {
     const url = new URL("/auth/request", request.url);
     url.searchParams.set("redirect", pathname);
@@ -61,11 +45,29 @@ export async function proxy(request: NextRequest) {
     if (isAdminOnly(pathname) && session.role !== "admin") {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return NextResponse.next();
+
+    // Rolling refresh — re-sign cookie on every approved request so the
+    // 15-day window resets on each visit. Only expires if unused for 15 days.
+    const response = NextResponse.next();
+    try {
+      const freshToken = await signSession(session);
+      response.cookies.set("__Host-session", freshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 15,
+      });
+    } catch {
+      // Still let the request through if re-signing fails
+    }
+    return response;
   }
 
   // Fallback (shouldn't normally reach here)
-  return NextResponse.redirect(new URL("/auth/request", request.url));
+  return NextResponse.redirect(
+    new URL(`/auth/request${search ? `?${search}` : ""}`, request.url),
+  );
 }
 
 export const config = {

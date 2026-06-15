@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       status: "approved",
       userId: resolvedUserId,
       approvedBy: adminSession.uid,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(),
     })
     .where(eq(schema.sessions.id, sessionId));

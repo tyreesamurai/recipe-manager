@@ -65,7 +65,7 @@ export async function GET() {
     secure: true,
     path: "/",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 15,
   });
 
   return Response.json({ status: "approved" }, { status: 200 });

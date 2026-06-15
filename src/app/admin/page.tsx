@@ -5,6 +5,7 @@ import { Clock3, Shield, Users } from "lucide-react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SessionActions } from "@/components/admin/session-actions";
+import { UserActions } from "@/components/admin/user-actions";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/db/index";
 import * as schema from "@/db/schema";
@@ -180,6 +181,7 @@ export default async function AdminPage() {
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">
                     Joined
                   </th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -201,6 +203,11 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">
                       {timeAgo(u.createdAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {u.role !== "admin" && (
+                        <UserActions userId={u.id} userName={u.name} />
+                      )}
                     </td>
                   </tr>
                 ))}
